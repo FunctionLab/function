@@ -352,6 +352,15 @@ class go:
             reterms.append({'oboid':obo_term.go_id, 'name':obo_term.name})
         return reterms
 
+    def get_xref_mapping(self, prefix):
+        xrefs = defaultdict(set)
+        for term in self.get_termobject_list():
+            ids = term.get_xrefs(prefix)
+            if ids:
+                for xref in ids:
+                    xrefs[xref].add(term.go_id)
+        return xrefs
+
     def as_gmt(self):
         gmt = GMT()
         tlist = self.get_termobject_list()
