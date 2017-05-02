@@ -18,6 +18,7 @@ class HGMD:
         self._user = user
         self._passwd = passwd
         self._data = None
+        self._onto = None
 
     def load_data(self):
         data = set()
@@ -48,7 +49,7 @@ class HGMD:
 
         return True
 
-    def load(self, onto=None, evidence=EVIDENCE, idmap=None):
+    def load_onto(self, onto=None, evidence=EVIDENCE, idmap=None):
         if not self._data:
             self.load_data()
 
@@ -61,14 +62,11 @@ class HGMD:
             if cui not in xrefs or evd not in evidence:
                 continue
 
-            if idmap:
-                genes = idmap[gene]
-            else:
-                genes = (gene,)
+            mapped_genes = idmap[gene] if idmap else (gene,)
 
-            for gid in genes:
-                for doid in xrefs[cui]:
-                    term = onto.get_term(doid)
+            for doid in xrefs[cui]:
+                term = onto.get_term(doid)
+                for gid in mapped_genes:
                     term.add_annotation(gid=gid)
 
         self._onto = onto
@@ -80,6 +78,6 @@ if __name__ == '__main__':
     entrez_map.load()
 
     hgmd = HGMD(host='127.0.0.1', port=3308, user='root', passwd='hgmd')
-    onto = hgmd.load(idmap=entrez_map.get_symbol_map())
+    onto = hgmd.load_onto(idmap=entrez_map.get_symbol_map())
 
     onto.print_to_gmt_file('test.txt')

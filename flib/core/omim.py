@@ -38,16 +38,9 @@ class OMIM:
     def __init__(self, key=None):
         self._key = key
         self._onto = None
+        self._data = None
 
-    def load(self, onto=None):
-        if not onto:
-            onto = DiseaseOntology.generate()
-
-        doid_omim = {}
-        for term in onto.get_termobject_list():
-            omims = term.get_xrefs('OMIM')
-            if omims:
-                doid_omim[term.go_id] = omims
+    def load_data(self):
 
         mim_gene = {}
         mim2gene_list = requests.get(MIM2GENE).text.splitlines()
@@ -114,30 +107,38 @@ class OMIM:
                                     mimdiseases[mim_disease_id].genetuples.append(
                                         tuple_gid_status)
 
-        entrez_gid = {}
-        # Iterate over doid->omim mapping
-        for doid, omim_list in doid_omim.iteritems():
-            term = onto.get_term(doid)
-            if term is None:
+        self._data = mimdiseases
+        return True
+
+    def load_onto(self, onto=None, idmap=None):
+        if not self._data:
+            self.load_data()
+
+        if not onto:
+            onto = DiseaseOntology.generate()
+
+        xrefs = onto.get_xref_mapping('OMIM')
+
+        for (omim_id, mim_entry) in self._data.iteritems():
+            if omim_id not in xrefs:
                 continue
 
-            logger.debug("Processing %s", term)
+            d_or_s = 'S' if mim_entry.is_susceptibility else 'D'
 
-            for omim_id in omim_list:
-                if omim_id not in mimdiseases:
-                    continue
-                mim_entry = mimdiseases[omim_id]
-                d_or_s = 'S' if mim_entry.is_susceptibility else 'D'
-
+            for doid in xrefs[omim_id]:
+                term = onto.get_term(doid)
                 for g in mim_entry.genetuples:
-                    entrez = g[0]
-                    term.add_annotation(gid=entrez, ref=None)
+
+                    genes = idmap[g[0]] if idmap else (g[0],)
+
+                    for gid in genes:
+                        term.add_annotation(gid=gid)
 
         self._onto = onto
         return onto
 
 if __name__ == '__main__':
     omim = OMIM()
-    onto = omim.load()
+    onto = omim.load_onto()
 
     onto.print_to_gmt_file('test.txt')

@@ -1,5 +1,5 @@
 
-from flib.core.go import go
+from go import go
 
 DO_URL = 'https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/doid-non-classified.obo'
 DO_NAME = 'Disease Ontology'

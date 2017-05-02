@@ -7,10 +7,6 @@ logger.setLevel(logging.WARNING)
 
 
 class IDMap:
-    """
-    Pass the filename of the key_value pair file.
-    """
-
     def __init__(self, filename = None, key_map = None):
         self._key_val = {}
         idfile = list
@@ -32,20 +28,17 @@ class IDMap:
         else:
             return self._key_val.keys()
 
-    """
-    Returns None if no file was loaded or if the key does not exist.
-    """
-
     def get(self, id):
+        """Returns emtpy list if not loaded or if the key does not exist."""
+
         if self._key_val is None:
             logger.info('idmap::get called with no mapping file loaded')
-            return None
+            return []
+        elif id not in self._key_val or len(self._key_val[id]) == 0:
+            logger.warning('No match for %s', id)
+            return []
         else:
-            try:
-                return self._key_val[id]
-            except KeyError:
-                logger.warning('No match for %s', id)
-                return None
+            return self._key_val[id]
 
     def __getitem__(self,arg):
         return self.get(arg)

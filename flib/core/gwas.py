@@ -3,9 +3,10 @@ import logging
 from collections import defaultdict
 import re
 import requests
-import requests_ftp
 
-from flib.core.do import DiseaseOntology
+from do import DiseaseOntology
+from entrez import Entrez
+from idmap import IDMap
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -19,20 +20,37 @@ class GWASCatalog:
 
     def __init__(self):
         self._onto = None
+        self._data = None
 
-    def load(self, onto=None):
+    def load_onto(self, onto=None, idmap=None):
+        if not self._data:
+            self.load_data()
+
         if not onto:
             onto = DiseaseOntology.generate()
 
-        term_map = defaultdict(set)
-        for (term_id, term) in onto.go_terms.iteritems():
-            if 'EFO' in term.xrefs:
-                for xref in term.xrefs['EFO']:
-                    term_map['EFO_' + xref].add(term)
+        xrefs = onto.get_xref_mapping('EFO')
 
+        for (trait, uri), genes in self._data.iteritems():
+            uids = [x.split('/')[-1].replace('EFO_','') for x in uri.split(',')]
+            if len(uids) > 1:
+                logger.info('Multiple mappings %s', uri)
+                continue
+
+            terms = [onto.get_term(termid) for uid in uids for termid in xrefs[uid]]
+            for term in terms:
+                for gene in genes:
+                    mapped_genes = idmap[gene] if idmap else (gene,)
+                    for gid in mapped_genes:
+                        term.add_annotation(gid=gid)
+
+        self._onto = onto
+        return onto
+
+    def load_data(self):
         lines = requests.get(GWAS_URL).text.encode('utf-8').splitlines()
 
-        genesets, disease = defaultdict(set), defaultdict(set)
+        genesets = defaultdict(set)
         headers = []
         for (i, line) in enumerate(lines):
             tok = line.strip().split('\t')
@@ -47,24 +65,16 @@ class GWASCatalog:
                 genes = set([x.strip()
                              for x in tok[REPORTED_GENES].split(',')])
                 genesets[key] |= genes
-                disease[key].add(tok[DISEASE])
 
-        for (trait, uri), genes in genesets.iteritems():
-            uids = [x.split('/')[-1] for x in uri.split(',')]
-            terms = [term for uid in uids for term in term_map[uid]]
-            if len(terms) != len(uids):
-                logger.info('Multiple mappings %s', uri)
-                continue
+        self._data = genesets
 
-            for term in terms:
-                for g in genes:
-                    term.add_annotation(gid=g)
-
-        self._onto = onto
-        return onto
+        return True
 
 if __name__ == '__main__':
+    entrez_map = Entrez()
+    entrez_map.load()
+
     gwas = GWASCatalog()
-    onto = gwas.load()
+    onto = gwas.load_onto(idmap=entrez_map.get_symbol_map())
 
     onto.print_to_gmt_file('test.txt')
