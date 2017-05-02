@@ -23,12 +23,15 @@ LIMIT_STATUS = ['C', 'P']
 # Most disorders that have omimphenotypes fit this expression
 FIND_MIMID = re.compile('\, [0-9]* \([1-4]\)')
 
+
 class mim_disease:
+
     def __init__(self):
         self.mimid = ''
         self.is_susceptibility = 0  # Whether it has {}
         self.phe_mm = ''  # Phenotype mapping method
         self.genetuples = []  # (Gene ID, Gene Status)
+
 
 class OMIM:
 

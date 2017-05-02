@@ -1,21 +1,19 @@
 import sys
 import logging
-logging.basicConfig()
-logger = logging.getLogger(__name__)
 from collections import defaultdict
-
 import re
-
 import requests
 import requests_ftp
 
 from flib.core.do import DiseaseOntology
 
-requests_ftp.monkeypatch_session()
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
-DISEASE, REPORTED_GENES, MAPPED_GENES, MAPPED_TRAIT, MAPPED_TRAIT_URI  = 7, 13, 14, 34, 35
+DISEASE, REPORTED_GENES, MAPPED_GENES, MAPPED_TRAIT, MAPPED_TRAIT_URI = 7, 13, 14, 34, 35
 COLS = [DISEASE, REPORTED_GENES, MAPPED_GENES, MAPPED_TRAIT, MAPPED_TRAIT_URI]
+
 
 class GWASCatalog:
 
@@ -30,7 +28,7 @@ class GWASCatalog:
         for (term_id, term) in onto.go_terms.iteritems():
             if 'EFO' in term.xrefs:
                 for xref in term.xrefs['EFO']:
-                    term_map['EFO_'+xref].add(term)
+                    term_map['EFO_' + xref].add(term)
 
         lines = requests.get(GWAS_URL).text.encode('utf-8').splitlines()
 
@@ -45,10 +43,11 @@ class GWASCatalog:
                     logger.error('Error on line %i', i)
                     continue
 
-                key = (tok[MAPPED_TRAIT],tok[MAPPED_TRAIT_URI])  
-                genes = set([x.strip() for x in tok[REPORTED_GENES].split(',')])
-                genesets[key] |= genes 
-                disease[key].add(tok[DISEASE])        
+                key = (tok[MAPPED_TRAIT], tok[MAPPED_TRAIT_URI])
+                genes = set([x.strip()
+                             for x in tok[REPORTED_GENES].split(',')])
+                genesets[key] |= genes
+                disease[key].add(tok[DISEASE])
 
         for (trait, uri), genes in genesets.iteritems():
             uids = [x.split('/')[-1] for x in uri.split(',')]

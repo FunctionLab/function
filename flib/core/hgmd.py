@@ -1,12 +1,14 @@
-import sys 
+import sys
 import os
-import MySQLdb as mdb 
+import MySQLdb as mdb
 from do import DiseaseOntology
+from entrez import Entrez
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
-EVIDENCE = frozenset(['DM','DFP'])
+EVIDENCE = frozenset(['DM', 'DFP'])
+
 
 class HGMD:
 
@@ -17,31 +19,36 @@ class HGMD:
         self._passwd = passwd
         self._data = None
 
-    def load_data(self): 
+    def load_data(self):
         data = set()
         try:
-            con = mdb.connect(host=self._host, port=self._port, 
-                    user=self._user, passwd=self._passwd)
+            con = mdb.connect(host=self._host, port=self._port,
+                              user=self._user, passwd=self._passwd)
             cur = con.cursor()
 
-            cur.execute("select gene, tag, phenotype, cui from hgmd_pro.allmut join hgmd_phenbase.hgmd_mutation on hgmd_pro.allmut.acc_num = hgmd_phenbase.hgmd_mutation.acc_num join hgmd_phenbase.hgmd_phenotype on hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.hgmd_mutation.phen_id join hgmd_phenbase.phenotype_concept on hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.phenotype_concept.phen_id")
+            cur.execute('select gene, tag, phenotype, cui from hgmd_pro.allmut '
+                'join hgmd_phenbase.hgmd_mutation on '
+                'hgmd_pro.allmut.acc_num = hgmd_phenbase.hgmd_mutation.acc_num '
+                'join hgmd_phenbase.hgmd_phenotype on '
+                'hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.hgmd_mutation.phen_id '
+                'join hgmd_phenbase.phenotype_concept on '
+                'hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.phenotype_concept.phen_id')
             rows = cur.fetchall()
             for row in rows:
-                #(acc_num,gene_sym,phen_id1,phen_id2,rela,cui,phen_id3,phenotype) = row
-                gene,tag,phenotype,cui = row 
-                result = (gene, cui, phenotype,tag)
+                gene, tag, phenotype, cui = row
+                result = (gene, cui, phenotype, tag)
                 data.add(result)
             con.close()
 
-        except mdb.Error, e:
+        except mdb.Error as e:
             logger.error('Error quering HGMD database')
-            return False 
+            return False
 
         self._data = data
 
-        return True 
+        return True
 
-    def load(self, onto=None, evidence=EVIDENCE):
+    def load(self, onto=None, evidence=EVIDENCE, idmap=None):
         if not self._data:
             self.load_data()
 
@@ -54,15 +61,25 @@ class HGMD:
             if cui not in xrefs or evd not in evidence:
                 continue
 
-            for doid in xrefs[cui]:
-                term = onto.get_term(doid)
-                term.add_annotation(gid=gene)
+            if idmap:
+                genes = idmap[gene]
+            else:
+                genes = (gene,)
+
+            for gid in genes:
+                for doid in xrefs[cui]:
+                    term = onto.get_term(doid)
+                    term.add_annotation(gid=gid)
 
         self._onto = onto
 
         return onto
 
 if __name__ == '__main__':
+    entrez_map = Entrez()
+    entrez_map.load()
+
     hgmd = HGMD(host='127.0.0.1', port=3308, user='root', passwd='hgmd')
-    onto = hgmd.load()
+    onto = hgmd.load(idmap=entrez_map.get_symbol_map())
+
     onto.print_to_gmt_file('test.txt')

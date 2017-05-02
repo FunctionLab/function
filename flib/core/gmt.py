@@ -2,11 +2,13 @@ import sys
 import os
 from collections import defaultdict
 
+
 class GMT:
 
     """
     Pass the filename of gmt file.
     """
+
     def __init__(self, filename=None):
         self._genesets = defaultdict(set)
         self._setnames = {}
@@ -48,16 +50,23 @@ class GMT:
         self._genesets[gsid].add(gene)
 
     def add(self, gmt):
-        for gsid,genes in gmt.genesets.iteritems():
+        for gsid, genes in gmt.genesets.iteritems():
             self._genesets[gsid] |= genes
-        for gsid,name in gmt.setnames.iteritems():
+        for gsid, name in gmt.setnames.iteritems():
             if gsid not in self._setnames:
                 self._setnames[gsid] = gmt.setnames[gsid]
 
     def write(self, outfile):
         outf = open(outfile, 'w')
-        for gsid,genes in self._genesets.iteritems():
-            outf.write(gsid + '\t' + self._setnames[gsid] + '\t' + '\t'.join(list(genes)) + '\n')
+        for gsid, genes in self._genesets.iteritems():
+            outf.write(
+                gsid +
+                '\t' +
+                self._setnames[gsid] +
+                '\t' +
+                '\t'.join(
+                    list(genes)) +
+                '\n')
         outf.close()
 
     def __repr__(self):
@@ -69,19 +78,43 @@ if __name__ == '__main__':
 
     usage = "usage: %prog [options]"
     parser = OptionParser(usage, version="%prog dev-unreleased")
-    parser.add_option("-i", "--gmt-file", dest="gmt", help="GMT file", metavar="FILE")
-    parser.add_option("-d", "--directory", dest="dir", help="directory of gene files", metavar="FILE")
-    parser.add_option("-c", "--gmt-comp-file", dest="gmt2", help="GMT file to combine", metavar="FILE")
-    parser.add_option("-o", "--output-gmt-file", dest="output", help="GMT file to output", metavar="FILE")
-    parser.add_option("-g", "--gene-file", dest="genef", help="gene file for comparision", metavar="FILE")
+    parser.add_option(
+        "-i",
+        "--gmt-file",
+        dest="gmt",
+        help="GMT file",
+        metavar="FILE")
+    parser.add_option(
+        "-d",
+        "--directory",
+        dest="dir",
+        help="directory of gene files",
+        metavar="FILE")
+    parser.add_option(
+        "-c",
+        "--gmt-comp-file",
+        dest="gmt2",
+        help="GMT file to combine",
+        metavar="FILE")
+    parser.add_option(
+        "-o",
+        "--output-gmt-file",
+        dest="output",
+        help="GMT file to output",
+        metavar="FILE")
+    parser.add_option(
+        "-g",
+        "--gene-file",
+        dest="genef",
+        help="gene file for comparision",
+        metavar="FILE")
 
     (options, args) = parser.parse_args()
-
 
     if options.dir:
         gs = gmt()
         for f in os.listdir(options.dir):
-            lines = open(options.dir+'/'+f).readlines()
+            lines = open(options.dir + '/' + f).readlines()
             for l in lines:
                 gs.genesets[f].add(l.strip())
             gs.setnames[f] = f
@@ -90,10 +123,10 @@ if __name__ == '__main__':
     else:
         #lines = open(options.genef).readlines()
         #genes = set()
-        #for l in lines:
+        # for l in lines:
         #    genes.add(l.strip())
 
         gs = gmt(options.gmt)
         for gname, gset in gs.overlap().iteritems():
-            for gname2,ovlp in gset.iteritems():
+            for gname2, ovlp in gset.iteritems():
                 print gname, gname2, ovlp
