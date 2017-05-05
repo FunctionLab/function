@@ -8,7 +8,7 @@ import re
 import requests
 import requests_ftp
 
-from flib.core.do import DiseaseOntology
+from onto import DiseaseOntology
 
 requests_ftp.monkeypatch_session()
 

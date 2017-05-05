@@ -1,4 +1,3 @@
-
 from go import go
 
 DO_URL = 'https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/doid-non-classified.obo'

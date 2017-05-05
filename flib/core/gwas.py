@@ -4,7 +4,7 @@ from collections import defaultdict
 import re
 import requests
 
-from do import DiseaseOntology
+from onto import DiseaseOntology
 from entrez import Entrez
 from idmap import IDMap
 

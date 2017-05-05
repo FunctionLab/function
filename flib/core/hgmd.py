@@ -1,9 +1,10 @@
 import sys
 import os
 import MySQLdb as mdb
-from do import DiseaseOntology
+from onto import DiseaseOntology
 from entrez import Entrez
 import logging
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
