@@ -11,7 +11,7 @@ parser.add_argument('--output', '-o', dest='output', type=str,
 parser.add_argument('--propagate', '-p', dest='propagate', action='store_true',
                                 default=False,
                                 help='propagate annotations')
-parser.add_argument('--databases', '-d', dest='databases', action='store_true',
+parser.add_argument('--databases', '-d', dest='databases',
                                 choices=['HGMD','OMIM','GWASCAT'],
                                 default=['HGMD','OMIM'],
                                 nargs='*',
