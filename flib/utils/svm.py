@@ -128,11 +128,11 @@ for gsid, std in standards.iteritems():
         clf.fit(X_train, y_train)
 
         if args.prob_fit == 'SIGMOID':
-            clf_prob = CalibratedClassifierCV(clf, cv='prefit', method='sigmoid')
-            clf_prob.fit(X_test, y_test)
+            clf_prob = CalibratedClassifierCV(clf, cv=3, method='sigmoid')
+            clf_prob.fit(X_train, y_train)
         elif args.prob_fit == 'ISO':
-            clf_prob = CalibratedClassifierCV(clf, cv='prefit', method='isotonic')
-            clf_prob.fit(X_test, y_test)
+            clf_prob = CalibratedClassifierCV(clf, cv=3, method='isotonic')
+            clf_prob.fit(X_train, y_train)
 
         print "Predicting SVM"
         if args.all:
@@ -165,8 +165,8 @@ for gsid, std in standards.iteritems():
 
                 for i,idx in enumerate(test):
                     train_probs[idx] = probs_cv[i]
-                '''
                 sorted_scores = sorted(zip([train_genes[i] for i in test], scores_cv, probs_cv), key=itemgetter(1), reverse=True)
+                '''
                 with open(args.output + '/' + gsid + '_' + str(cv), 'w') as outfile:
                     for g,s,p in sorted_scores:
                         if g in pos_genes:
