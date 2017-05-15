@@ -2,13 +2,15 @@ import argparse
 import numpy as np
 import random
 from collections import namedtuple
+from operator import itemgetter
 
 from sklearn.svm import SVC, LinearSVC
 from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict, GridSearchCV, KFold
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import roc_auc_score, classification_report, average_precision_score
+from sklearn.metrics import roc_auc_score, classification_report, average_precision_score, brier_score_loss
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.ensemble import BaggingClassifier
+from sklearn.calibration import CalibratedClassifierCV
 
 from flib.core.dab import Dab
 from flib.core.omim import OMIM
@@ -33,6 +35,12 @@ parser.add_argument('--best-params', '-b', dest='best_params', action='store_tru
 parser.add_argument('--geneset_id', '-G', dest='geneset_id', type=str,
                                 help='geneset id')
 
+parser.add_argument('--prob', '-p', dest='prob_fit',
+                                choices=['SIGMOID','ISO'],
+                                default=None,
+                                help='probability fit')
+
+
 args = parser.parse_args()
 
 
@@ -40,30 +48,19 @@ args = parser.parse_args()
 standards = {}
 Std = namedtuple('Std', ['pos', 'neg'])
 
-if args.gmt:
-    gmt = GMT(filename=args.gmt)
-
+gmt = GMT(filename=args.gmt)
+if args.geneset_id:
+    pos_genes = gmt.get_genes(args.geneset_id)
+    neg_genes = gmt.genes - pos_genes
+    standards[args.geneset_id] = Std(pos=pos_genes, neg=neg_genes)
+else:
     for (gsid, genes) in gmt.genesets.iteritems():
         pos_genes = gmt.get_genes(gsid)
         neg_genes = gmt.genes - pos_genes
-        if len(pos_genes) >= 10:
+        if len(pos_genes) >= 10 and len(pos_genes) <= 1000:
             standards[gsid] = Std(pos=pos_genes, neg=neg_genes)
-    print len(standards.keys())
-else:
-    # Load OMIM annotations
-    do = DiseaseOntology.generate()
-    omim = OMIM()
-    omim.load_onto(onto=do)
-    do.propagate()
-    term = do.get_term(args.geneset_id)
 
-    pos_genes = set(term.get_annotated_genes())
-
-    all_genes = set()
-    for term in do.get_termobject_list():
-        all_genes |= set(term.get_annotated_genes())
-    neg_genes = all_genes - pos_genes
-
+print len(standards.keys())
 
 dab = Dab(args.input)
 if args.all:
@@ -95,22 +92,17 @@ for gsid, std in standards.iteritems():
             y[i] = 1 if g in pos_genes else -1
 
     if args.best_params:
-        # Split the dataset in two equal parts
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0, random_state=0)
-
         # Set the parameters by cross-validation
         tuned_parameters = [
             {'C': [.0001, .001, .01, .1, 1, 10, 100], 'class_weight':['balanced', None]},
         ]
-
         score = 'average_precision'
 
         print("# Tuning hyper-parameters for %s" % score)
 
-        clf = GridSearchCV(LinearSVC(), tuned_parameters, cv=3, n_jobs=15,
+        clf = GridSearchCV(LinearSVC(), tuned_parameters, cv=3, n_jobs=10,
                            scoring=score)
-        clf.fit(X_train, y_train)
+        clf.fit(X, y)
         best_params = clf.best_params_
 
         print(clf.best_params_)
@@ -123,17 +115,24 @@ for gsid, std in standards.iteritems():
         best_params = {'C':50, 'class_weight':'balanced'}
 
 
-    train_scores = np.empty(len(train_genes))
-    train_scores[:] = np.NAN
-    scores = None
+    train_scores, train_probs = np.empty(len(train_genes)), np.empty(len(train_genes))
+    train_scores[:], train_probs[:] = np.NAN, np.NAN
+    scores, probs = None, None
 
     kf = StratifiedKFold(n_splits=5)
-    for train, test in kf.split(X, y):
+    for cv, (train, test) in enumerate(kf.split(X, y)):
         X_train, X_test, y_train, y_test = X[train], X[test], y[train], y[test]
 
         print "Learning SVM"
         clf = LinearSVC(**best_params)
         clf.fit(X_train, y_train)
+
+        if args.prob_fit == 'SIGMOID':
+            clf_prob = CalibratedClassifierCV(clf, cv='prefit', method='sigmoid')
+            clf_prob.fit(X_test, y_test)
+        elif args.prob_fit == 'ISO':
+            clf_prob = CalibratedClassifierCV(clf, cv='prefit', method='isotonic')
+            clf_prob.fit(X_test, y_test)
 
         print "Predicting SVM"
         if args.all:
@@ -143,31 +142,76 @@ for gsid, std in standards.iteritems():
             for idx in test:
                 train_scores[idx] = scores_cv[train_genes_idx[idx]]
 
+            # Store fitted probabilities
+            if args.prob_fit:
+                probs_cv = clf_prob.predict_proba(X_all)[:,1]
+                probs = probs_cv if probs is None else np.column_stack((probs, probs_cv))
+
+                for idx in test:
+                    train_probs[idx] = probs_cv[train_genes_idx[idx]]
+
         else:
             scores_cv = clf.decision_function(X_test)
-            print roc_auc_score(y_test, scores_cv), average_precision_score(y_test, scores_cv)
-
             for i,idx in enumerate(test):
                 train_scores[idx] = scores_cv[i]
+
+            print roc_auc_score(y_test, scores_cv)
+
+            # Store fitted probabilities
+            if args.prob_fit:
+                probs_cv = clf_prob.predict_proba(X_test)[:,1]
+
+                print roc_auc_score(y_test, probs_cv)
+
+                for i,idx in enumerate(test):
+                    train_probs[idx] = probs_cv[i]
+                '''
+                sorted_scores = sorted(zip([train_genes[i] for i in test], scores_cv, probs_cv), key=itemgetter(1), reverse=True)
+                with open(args.output + '/' + gsid + '_' + str(cv), 'w') as outfile:
+                    for g,s,p in sorted_scores:
+                        if g in pos_genes:
+                            label = '1'
+                        elif g in neg_genes:
+                            label = '-1'
+                        else:
+                            label = '0'
+                        line = [g, label, str(s), str(p), '\n']
+                        outfile.write('\t'.join(line))
+                    outfile.close()
+                '''
 
     if args.all:
         scores = np.median(scores, axis=1)
         for i,idx in enumerate(train_genes_idx):
             scores[idx] = train_scores[i]
 
+        probs = np.median(probs, axis=1)
+        for i,idx in enumerate(train_genes_idx):
+            probs[idx] = train_probs[i]
+
         genes = dab.gene_list
     else:
         scores = train_scores
         genes = train_genes
+        probs = train_probs
 
     print 'Performance:', \
         len(neg_genes & set(train_genes)), \
         roc_auc_score(y, train_scores), \
-        average_precision_score(y, train_scores)
+        roc_auc_score(y, train_probs), \
+        average_precision_score(y, train_scores), \
+        average_precision_score(y, train_probs)
 
     if args.output:
+        sorted_scores = sorted(zip(genes, scores, probs), key=itemgetter(1), reverse=True)
         with open(args.output + '/' + gsid, 'w') as outfile:
-            for (g,s) in zip(genes, scores):
-                line = [g, ('1' if g in pos_genes else '-1' if g in neg_genes else '0'), str(s), '\n']
+            for (g,s,p) in sorted_scores:
+                if g in pos_genes:
+                    label = '1'
+                elif g in neg_genes:
+                    label = '-1'
+                else:
+                    label = '0'
+                line = [g, label, str(s), str(p), '\n']
                 outfile.write('\t'.join(line))
             outfile.close()
