@@ -18,18 +18,19 @@ files = os.listdir(options.dir)
 files.sort()
 
 for f in files:
-    labels, scores = [], []
+    labels, scores, probs = [], [], []
 
     for l in open(options.dir + '/' + f):
         gene, status, val, prob = l.strip().split('\t')[0:4]
-        val = prob
         if status != '0':
             if status == '1':
                 labels.append(True)
             elif status == '-1':
                 labels.append(False)
             scores.append(float(val))
+            probs.append(float(prob))
 
-    labels, scores = np.array(labels), np.array(scores)
+    labels, scores, probs = np.array(labels), np.array(scores), np.array(probs)
 
-    print f, average_precision_score(labels, scores), roc_auc_score(labels, scores)
+    print f, average_precision_score(labels, scores), roc_auc_score(labels, scores), \
+            average_precision_score(labels, probs), roc_auc_score(labels, probs)

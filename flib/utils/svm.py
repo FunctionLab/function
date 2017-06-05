@@ -11,6 +11,7 @@ from sklearn.metrics import roc_auc_score, classification_report, average_precis
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.ensemble import BaggingClassifier
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.isotonic import IsotonicRegression
 
 from flib.core.dab import Dab
 from flib.core.omim import OMIM
@@ -143,13 +144,14 @@ for gsid, std in standards.iteritems():
                 train_scores[idx] = scores_cv[train_genes_idx[idx]]
 
             # Store fitted probabilities
+            '''
             if args.prob_fit:
                 probs_cv = clf_prob.predict_proba(X_all)[:,1]
                 probs = probs_cv if probs is None else np.column_stack((probs, probs_cv))
 
                 for idx in test:
                     train_probs[idx] = probs_cv[train_genes_idx[idx]]
-
+            '''
         else:
             scores_cv = clf.decision_function(X_test)
             for i,idx in enumerate(test):
@@ -158,6 +160,7 @@ for gsid, std in standards.iteritems():
             print roc_auc_score(y_test, scores_cv)
 
             # Store fitted probabilities
+            '''
             if args.prob_fit:
                 probs_cv = clf_prob.predict_proba(X_test)[:,1]
 
@@ -166,7 +169,8 @@ for gsid, std in standards.iteritems():
                 for i,idx in enumerate(test):
                     train_probs[idx] = probs_cv[i]
                 sorted_scores = sorted(zip([train_genes[i] for i in test], scores_cv, probs_cv), key=itemgetter(1), reverse=True)
-                '''
+            '''
+            '''
                 with open(args.output + '/' + gsid + '_' + str(cv), 'w') as outfile:
                     for g,s,p in sorted_scores:
                         if g in pos_genes:
@@ -178,7 +182,21 @@ for gsid, std in standards.iteritems():
                         line = [g, label, str(s), str(p), '\n']
                         outfile.write('\t'.join(line))
                     outfile.close()
-                '''
+            '''
+
+    if args.prob_fit == 'ISO':
+        ir = IsotonicRegression(out_of_bounds='clip')
+        from sklearn.preprocessing import label_binarize
+        Y = label_binarize(y, [-1,1])
+        ir.fit(train_scores, Y[:,0])
+        train_probs = ir.predict(train_scores)
+    elif args.prob_fit == 'SIGMOID':
+        from sklearn.calibration import _SigmoidCalibration
+        from sklearn.preprocessing import label_binarize
+        Y = label_binarize(y, [-1,1])
+        sc = _SigmoidCalibration()
+        sc.fit(train_scores, Y)
+        train_probs = sc.predict(train_scores)
 
     if args.all:
         scores = np.median(scores, axis=1)
