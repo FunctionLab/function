@@ -1,16 +1,18 @@
 import argparse
 import numpy as np
 import random
+import os
 from collections import namedtuple
 from operator import itemgetter
 
 from sklearn.svm import SVC, LinearSVC
 from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict, GridSearchCV, KFold
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import label_binarize
 from sklearn.metrics import roc_auc_score, classification_report, average_precision_score, brier_score_loss
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.ensemble import BaggingClassifier
-from sklearn.calibration import CalibratedClassifierCV
+from sklearn.calibration import CalibratedClassifierCV, _SigmoidCalibration
 from sklearn.isotonic import IsotonicRegression
 
 from flib.core.dab import Dab
@@ -27,6 +29,8 @@ parser.add_argument('--output', '-o', dest='output', type=str,
                                 help='output directory')
 parser.add_argument('--gmt', '-g', dest='gmt', type=str,
                                 help='input GMT (geneset) file')
+parser.add_argument('--dir', '-d', dest='dir', type=str,
+                                help='directory of labels')
 parser.add_argument('--all', '-a', dest='all', action='store_true',
                                 default=False,
                                 help='predict all genes')
@@ -35,33 +39,42 @@ parser.add_argument('--best-params', '-b', dest='best_params', action='store_tru
                                 help='select best parameters by cross validation')
 parser.add_argument('--geneset_id', '-G', dest='geneset_id', type=str,
                                 help='geneset id')
-
 parser.add_argument('--prob', '-p', dest='prob_fit',
                                 choices=['SIGMOID','ISO'],
                                 default=None,
                                 help='probability fit')
 
-
 args = parser.parse_args()
-
-
 
 standards = {}
 Std = namedtuple('Std', ['pos', 'neg'])
 
-gmt = GMT(filename=args.gmt)
-if args.geneset_id:
-    pos_genes = gmt.get_genes(args.geneset_id)
-    neg_genes = gmt.genes - pos_genes
-    standards[args.geneset_id] = Std(pos=pos_genes, neg=neg_genes)
-else:
-    for (gsid, genes) in gmt.genesets.iteritems():
-        pos_genes = gmt.get_genes(gsid)
+if args.gmt:
+    gmt = GMT(filename=args.gmt)
+    if args.geneset_id:
+        pos_genes = gmt.get_genes(args.geneset_id)
         neg_genes = gmt.genes - pos_genes
-        if len(pos_genes) >= 10 and len(pos_genes) <= 1000:
-            standards[gsid] = Std(pos=pos_genes, neg=neg_genes)
+        standards[args.geneset_id] = Std(pos=pos_genes, neg=neg_genes)
+    else:
+        for (gsid, genes) in gmt.genesets.iteritems():
+            pos_genes = gmt.get_genes(gsid)
+            neg_genes = gmt.genes - pos_genes
+            if len(pos_genes) >= 10 and len(pos_genes) <= 1000:
+                standards[gsid] = Std(pos=pos_genes, neg=neg_genes)
+elif args.dir:
+    for f in os.listdir(args.dir):
+        pos_genes, neg_genes = set(), set()
+        with open(args.dir + '/' + f) as labelf:
+            lines = labelf.readlines()
+            for l in lines:
+                gene, label = l.strip('\t').split()[:2]
+                if label == '1':
+                    pos_genes.add(gene)
+                elif label == '-1':
+                    neg_genes.add(gene)
 
-print len(standards.keys())
+        if len(pos_genes) < 500:
+            standards[f] = Std(pos=pos_genes, neg=neg_genes)
 
 dab = Dab(args.input)
 if args.all:
@@ -72,10 +85,13 @@ if args.all:
             print i
         X_all[i] = dab.get(g)
 
-
 for gsid, std in standards.iteritems():
+
+    if args.output and os.path.exists(args.output + '/' + gsid):
+        continue
+
     print 'Predicting', gsid, len(std.pos), len(std.neg)
-    pos_genes, neg_gens = std.pos, std.neg
+    pos_genes, neg_genes = std.pos, std.neg
 
     # Group training genes
     train_genes = [g for g in (pos_genes | neg_genes) if dab.get_index(g) is not None]
@@ -115,7 +131,6 @@ for gsid, std in standards.iteritems():
     else:
         best_params = {'C':50, 'class_weight':'balanced'}
 
-
     train_scores, train_probs = np.empty(len(train_genes)), np.empty(len(train_genes))
     train_scores[:], train_probs[:] = np.NAN, np.NAN
     scores, probs = None, None
@@ -128,13 +143,6 @@ for gsid, std in standards.iteritems():
         clf = LinearSVC(**best_params)
         clf.fit(X_train, y_train)
 
-        if args.prob_fit == 'SIGMOID':
-            clf_prob = CalibratedClassifierCV(clf, cv=3, method='sigmoid')
-            clf_prob.fit(X_train, y_train)
-        elif args.prob_fit == 'ISO':
-            clf_prob = CalibratedClassifierCV(clf, cv=3, method='isotonic')
-            clf_prob.fit(X_train, y_train)
-
         print "Predicting SVM"
         if args.all:
             scores_cv = clf.decision_function(X_all)
@@ -142,57 +150,17 @@ for gsid, std in standards.iteritems():
 
             for idx in test:
                 train_scores[idx] = scores_cv[train_genes_idx[idx]]
-
-            # Store fitted probabilities
-            '''
-            if args.prob_fit:
-                probs_cv = clf_prob.predict_proba(X_all)[:,1]
-                probs = probs_cv if probs is None else np.column_stack((probs, probs_cv))
-
-                for idx in test:
-                    train_probs[idx] = probs_cv[train_genes_idx[idx]]
-            '''
         else:
             scores_cv = clf.decision_function(X_test)
             for i,idx in enumerate(test):
                 train_scores[idx] = scores_cv[i]
 
-            print roc_auc_score(y_test, scores_cv)
-
-            # Store fitted probabilities
-            '''
-            if args.prob_fit:
-                probs_cv = clf_prob.predict_proba(X_test)[:,1]
-
-                print roc_auc_score(y_test, probs_cv)
-
-                for i,idx in enumerate(test):
-                    train_probs[idx] = probs_cv[i]
-                sorted_scores = sorted(zip([train_genes[i] for i in test], scores_cv, probs_cv), key=itemgetter(1), reverse=True)
-            '''
-            '''
-                with open(args.output + '/' + gsid + '_' + str(cv), 'w') as outfile:
-                    for g,s,p in sorted_scores:
-                        if g in pos_genes:
-                            label = '1'
-                        elif g in neg_genes:
-                            label = '-1'
-                        else:
-                            label = '0'
-                        line = [g, label, str(s), str(p), '\n']
-                        outfile.write('\t'.join(line))
-                    outfile.close()
-            '''
-
     if args.prob_fit == 'ISO':
         ir = IsotonicRegression(out_of_bounds='clip')
-        from sklearn.preprocessing import label_binarize
         Y = label_binarize(y, [-1,1])
         ir.fit(train_scores, Y[:,0])
         train_probs = ir.predict(train_scores)
     elif args.prob_fit == 'SIGMOID':
-        from sklearn.calibration import _SigmoidCalibration
-        from sklearn.preprocessing import label_binarize
         Y = label_binarize(y, [-1,1])
         sc = _SigmoidCalibration()
         sc.fit(train_scores, Y)

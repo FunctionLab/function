@@ -44,7 +44,7 @@ class Dab(object):
             if chrs == b'\x00\x00':
                 dab_file.seek(start)
 
-                gene = dab_file.read(end - start).decode()
+                gene = dab_file.read(end - start).decode().strip()
                 gene = gene.replace('\x00','')
 
                 self.gene_list.append(gene)

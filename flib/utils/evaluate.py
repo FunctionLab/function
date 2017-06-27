@@ -21,7 +21,8 @@ for f in files:
     labels, scores, probs = [], [], []
 
     for l in open(options.dir + '/' + f):
-        gene, status, val, prob = l.strip().split('\t')[0:4]
+        gene, status, val = l.strip().split('\t')[0:3]
+        prob = val
         if status != '0':
             if status == '1':
                 labels.append(True)
