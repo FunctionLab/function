@@ -26,7 +26,7 @@ from labels import OntoLabels
 
 class NetworkSVM:
 
-    default_params = {'C':50, 'class_weight':'balanced', 'loss':'hinge'}
+    default_params = {'C':50, 'class_weight':'balanced'}
     tuned_parameters = [
         {'C': [.0001, .001, .01, .1, 1, 10, 100], 'class_weight':['balanced', None]},
     ]
@@ -144,57 +144,3 @@ class NetworkSVM:
                 line = [g, label, str(s), str(p), '\n']
                 outfile.write('\t'.join(line))
             outfile.close()
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Generate a file of updated disease gene annotations')
-    parser.add_argument('--input', '-i', dest='input', type=str,
-                                    help='input dab file')
-    parser.add_argument('--output', '-o', dest='output', type=str,
-                                    help='output directory')
-    parser.add_argument('--gmt', '-g', dest='gmt', type=str,
-                                    help='input GMT (geneset) file')
-    parser.add_argument('--dir', '-d', dest='dir', type=str,
-                                    help='directory of labels')
-    parser.add_argument('--all', '-a', dest='all', action='store_true',
-                                    default=False,
-                                    help='predict all genes')
-    parser.add_argument('--best-params', '-b', dest='best_params', action='store_true',
-                                    default=False,
-                                    help='select best parameters by cross validation')
-    parser.add_argument('--prob', '-p', dest='prob_fit',
-                                    choices=['SIGMOID','ISO'],
-                                    default=None,
-                                    help='probability fit')
-    args = parser.parse_args()
-
-    dab = Dab(args.input)
-    svm = NetworkSVM(dab)
-
-    do = DiseaseOntology.generate()
-
-    if args.gmt:
-        gmt = GMT(filename=args.gmt)
-        for (gsid, genes) in gmt.genesets.iteritems():
-            term = do.get_term(gsid)
-            for gid in genes:
-                term.add_annotation(gsid, gid)
-    else:
-        OMIM().load_onto(onto=do)
-
-    do.propagate()
-
-    lines = open('../../files/do_slim.txt').readlines()
-    slim_terms = set([l.strip() for l in lines])
-
-    ol = OntoLabels(obo=do, slim_terms=slim_terms)
-
-    for term in do.get_termobject_list():
-        if len(term.annotations) == 0:
-            continue
-
-        (pos, neg) = ol.get_labels(term.go_id)
-        if len(pos) < 5:
-            continue
-        print term.go_id, len(pos), len(neg)
-        predictions = svm.predict(pos, neg)
-

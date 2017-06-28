@@ -6,7 +6,6 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 from multiprocessing import Pool
-from multiprocessing.dummy import Pool as ThreadPool
 
 from flib.core.dab import Dab
 from flib.core.gmt import GMT
@@ -35,7 +34,10 @@ parser.add_argument('--best-params', '-b', dest='best_params', action='store_tru
                                 help='Select best parameters by cross validation')
 args = parser.parse_args()
 
+MIN_POS, MAX_POS = 5, 500
+
 if args.gmt:
+    # Load GMT genes onto Disease Ontology and propagate
     do = DiseaseOntology.generate()
     gmt = GMT(filename=args.gmt)
     for (gsid, genes) in gmt.genesets.iteritems():
@@ -44,19 +46,23 @@ if args.gmt:
             term.add_annotation(gid)
 
     do.propagate()
-    terms = [term.go_id for term in do.get_termobject_list() \
-        if len(term.annotations) > 4 and len(term.annotations) < 500]
 
+    # Filter terms by number of gene annotations
+    terms = [term.go_id for term in do.get_termobject_list() \
+        if len(term.annotations) >= MIN_POS and len(term.annotations) <= MAX_POS]
+
+    # Build ontology aware labels
     lines = open('../../files/do_slim.txt').readlines()
     slim_terms = set([l.strip() for l in lines])
     labels = OntoLabels(obo=do, slim_terms=slim_terms)
 elif args.dir:
     labels = Labels(labels_dir=args.dir)
     terms = [term for term in labels.get_terms() \
-                if len(labels.get_labels(term)[0]) > 4 and
-                len(labels.get_labels(term)[0]) < 500]
+                if len(labels.get_labels(term)[0]) >= MIN_POS and
+                len(labels.get_labels(term)[0]) <= MAX_POS]
 else:
     OMIM().load_onto(onto=do)
+    do.propagate()
 
 dab = Dab(args.input)
 svm = NetworkSVM(dab)
@@ -74,4 +80,3 @@ def run_svm(term):
 pool = Pool(args.threads)
 pool.map(run_svm, terms)
 pool.close()
-pool.join()
