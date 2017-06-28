@@ -4,13 +4,9 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 
 import re
-
 import requests
-import requests_ftp
 
 from onto import DiseaseOntology
-
-requests_ftp.monkeypatch_session()
 
 MIM2GENE = 'http://omim.org/static/omim/data/mim2gene.txt'
 GENEMAP = 'http://data.omim.org/downloads/NA8NpTI7QLK_CpW0PqV5uw/genemap.txt'
