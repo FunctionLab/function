@@ -26,7 +26,7 @@ from labels import OntoLabels
 
 class NetworkSVM:
 
-    default_params = {'C':50}
+    default_params = {'C':50, 'class_weight':'balanced', 'loss':'hinge'}
     tuned_parameters = [
         {'C': [.0001, .001, .01, .1, 1, 10, 100], 'class_weight':['balanced', None]},
     ]

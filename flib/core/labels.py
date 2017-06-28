@@ -11,9 +11,9 @@ class Labels:
 
     def __init__(self, labels_dir, pos_label='1', neg_label='-1'):
         self._standards = {}
-        for f in os.listdir(labels_dir):
+        for labels_file in os.listdir(labels_dir):
             pos_genes, neg_genes = set(), set()
-            with open(labels_file) as labelf:
+            with open(labels_dir + '/' + labels_file) as labelf:
                 lines = labelf.readlines()
                 for l in lines:
                     gene, label = l.strip('\t').split()[:2]
@@ -21,10 +21,13 @@ class Labels:
                         pos_genes.add(gene)
                     elif label == neg_label:
                         neg_genes.add(gene)
-            self._standards[f] = (pos_genes, neg_genes)
+            self._standards[labels_file] = (pos_genes, neg_genes)
 
     def get_labels(self, term_id):
         return self._standards[term_id]
+
+    def get_terms(self):
+        return self._standards.keys()
 
 class OntoLabels:
 
