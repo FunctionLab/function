@@ -10,7 +10,7 @@ setup(
     version='0.1.0',
     description="Function Lab Python Library",
   # long_description="",
-    url='https://github.com/aaronkw/function',
+    url='https://github.com/FunctionLab/function',
     author='Aaron Wong',
   # author_email='',
   # license='',
