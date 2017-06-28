@@ -5,6 +5,11 @@ import os
 from collections import namedtuple
 from operator import itemgetter
 
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 from sklearn.svm import SVC, LinearSVC
 from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict, GridSearchCV, KFold
 from sklearn.model_selection import StratifiedKFold
@@ -21,7 +26,7 @@ from labels import OntoLabels
 
 class NetworkSVM:
 
-    default_params = {'C':50, 'class_weight':'balanced'}
+    default_params = {'C':50}
     tuned_parameters = [
         {'C': [.0001, .001, .01, .1, 1, 10, 100], 'class_weight':['balanced', None]},
     ]
@@ -35,7 +40,7 @@ class NetworkSVM:
             self._X_all = np.empty([self._dab.get_size(), self._dab.get_size()])
             for i, g in enumerate(self._dab.gene_list):
                 if not i % 1000:
-                    print i
+                    logger.info('Loaded %i', i)
                 self._X_all[i] = self._dab.get(g)
         return self._X_all
 
@@ -44,6 +49,8 @@ class NetworkSVM:
             best_params=False,
             prob_fit='SIGMOID',
             cv_folds=5):
+
+        logger.info("Running %i fold SVM", cv_folds)
 
         # Group training genes
         train_genes = [g for g in (pos_genes | neg_genes) if self._dab.get_index(g) is not None]
@@ -78,12 +85,12 @@ class NetworkSVM:
         for cv, (train, test) in enumerate(kf.split(X, y)):
             X_train, X_test, y_train, y_test = X[train], X[test], y[train], y[test]
 
-            print "Learning SVM"
+            logger.info('Learning SVM')
             clf = LinearSVC(**params)
             clf.fit(X_train, y_train)
 
-            print "Predicting SVM"
-            if args.all:
+            logger.info('Predicting SVM')
+            if predict_all:
                 scores_cv = clf.decision_function(X_all)
                 scores = scores_cv if scores is None else np.column_stack((scores, scores_cv))
 
