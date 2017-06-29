@@ -1,11 +1,7 @@
 import sys
 import os
 from collections import defaultdict
-from go import go
 from omim import OMIM
-
-from onto import DiseaseOntology
-
 
 class Labels:
 
@@ -57,6 +53,8 @@ class OntoLabels:
 
 
 if __name__ == '__main__':
+    from onto import DiseaseOntology
+
     do = DiseaseOntology.generate()
     OMIM().load_onto(onto=do)
     do.propagate()

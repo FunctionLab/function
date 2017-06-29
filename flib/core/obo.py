@@ -10,8 +10,7 @@ from idmap import IDMap
 from gmt import GMT
 import urllib2
 
-
-class go:
+class OBO:
     heads = None
     go_terms = None
     alt_id2std_id = None
@@ -1129,7 +1128,7 @@ if __name__ == '__main__':
     if options.idfile is not None:
         id_name = IDMap(options.idfile)
 
-    gene_ontology = go(options.obo)
+    gene_ontology = OBO(options.obo)
 
     # only check if fringe is valid in this obo file?
     if options.check_fringe:

@@ -10,14 +10,16 @@ from multiprocessing import Pool
 from flib.core.dab import Dab
 from flib.core.gmt import GMT
 from flib.core.omim import OMIM
-from flib.core.onto import DiseaseOntology
+from flib.core.onto import Ontology, DiseaseOntology, GeneOntology
 from flib.core.labels import OntoLabels, Labels
 from flib.core.svm import NetworkSVM
 
 parser = argparse.ArgumentParser(description='Generate a file of updated disease gene annotations')
 parser.add_argument('--input', '-i', dest='input', type=str,
+                                required=True,
                                 help='Input dab file')
 parser.add_argument('--output', '-o', dest='output', type=str,
+                                required=True,
                                 help='Output directory')
 parser.add_argument('--gmt', '-g', dest='gmt', type=str,
                                 help='Input GMT (geneset) file')
@@ -32,20 +34,31 @@ parser.add_argument('--threads', '-t', dest='threads', type=int,
 parser.add_argument('--best-params', '-b', dest='best_params', action='store_true',
                                 default=False,
                                 help='Select best parameters by cross validation')
+parser.add_argument('--ontology', '-y', dest='ontology',
+                                choices=['GO','DO'],
+                                default='DO',
+                                nargs=1,
+                                help='Ontology to use for propagation')
 args = parser.parse_args()
 
 MIN_POS, MAX_POS = 5, 500
 
+if args.ontology == 'DO':
+    onto = DiseaseOntology.generate()
+elif args.ontology == 'GO':
+    onto = GeneOntology.generate()
+else:
+    onto = Ontology.generate()
+
 if args.gmt:
     # Load GMT genes onto Disease Ontology and propagate
-    do = DiseaseOntology.generate()
     gmt = GMT(filename=args.gmt)
     for (gsid, genes) in gmt.genesets.iteritems():
-        term = do.get_term(gsid)
+        term = onto.get_term(gsid)
         for gid in genes:
             term.add_annotation(gid)
 
-    do.propagate()
+    onto.propagate()
 
     # Filter terms by number of gene annotations
     terms = [term.go_id for term in do.get_termobject_list() \
@@ -61,8 +74,9 @@ elif args.dir:
                 if len(labels.get_labels(term)[0]) >= MIN_POS and
                 len(labels.get_labels(term)[0]) <= MAX_POS]
 else:
-    OMIM().load_onto(onto=do)
-    do.propagate()
+    logger.error('Insufficient options to proceed. \
+            Please provide a GMT file or a directory of labels')
+    exit()
 
 dab = Dab(args.input)
 svm = NetworkSVM(dab)
