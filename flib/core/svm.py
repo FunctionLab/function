@@ -1,8 +1,6 @@
 import argparse
 import numpy as np
-import random
 import os
-from collections import namedtuple
 from operator import itemgetter
 
 import logging
@@ -10,12 +8,11 @@ logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
-from sklearn.svm import SVC, LinearSVC
-from sklearn.model_selection import train_test_split, cross_val_score, cross_val_predict, GridSearchCV, KFold
-from sklearn.model_selection import StratifiedKFold
+from sklearn.svm import LinearSVC
+from sklearn.model_selection import GridSearchCV, StratifiedKFold
 from sklearn.preprocessing import label_binarize
-from sklearn.metrics import roc_auc_score, classification_report, average_precision_score, brier_score_loss
-from sklearn.calibration import CalibratedClassifierCV, _SigmoidCalibration
+from sklearn.metrics import roc_auc_score, average_precision_score
+from sklearn.calibration import _SigmoidCalibration
 from sklearn.isotonic import IsotonicRegression
 
 from dab import Dab
