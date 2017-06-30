@@ -1,4 +1,9 @@
 import argparse
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.ERROR)
+
 from optparse import OptionParser
 
 from flib.core.obo import OBO
@@ -8,6 +13,7 @@ parser.add_argument(
     "-o",
     "--obo-file",
     dest="obo",
+    required=True,
     help="A obo file",
     metavar="FILE")
 parser.add_argument(
@@ -62,6 +68,7 @@ parser.add_argument(
     "-n",
     "--namespace",
     dest="nspace",
+    default="biological_process",
     help="limit the GO term output to the input namespace: (biological_process, cellular_component, molecular_function)",
     metavar="STRING")
 parser.add_argument(
@@ -93,6 +100,7 @@ if args.idfile is not None:
 
 gene_ontology = OBO(args.obo)
 
+logger.info('Populating gene associations')
 if args.ass:
     gene_ontology.populate_annotations(
         args.ass,
@@ -119,6 +127,7 @@ if args.idfile is not None:
     gene_ontology.map_genes(id_name)
 
 if args.propagate:
+    logger.info('Propagating gene associations')
     gene_ontology.propagate()
 
 gterms = None
@@ -139,4 +148,6 @@ if args.ofile:
         args.nspace,
         args.assoc_format)
 else:
-    gene_ontology.print_to_dir(args.opref, gterms, args.nspace)
+    gene_ontology.print_to_dir(args.opref,
+        gterms,
+        args.nspace)

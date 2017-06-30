@@ -376,6 +376,8 @@ class OBO:
         # print terms
         for term in tlist:
             id_set = set(term.get_annotated_genes())
+            if len(id_set) == 0:
+                continue
             output_fh = open(out_dir + '/' + term.name, 'w')
             # keep previous behavior w/ newline at end
             output_fh.write('\n'.join(id_set) + '\n')
