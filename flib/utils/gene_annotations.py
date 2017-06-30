@@ -7,6 +7,7 @@ logger.setLevel(logging.ERROR)
 from optparse import OptionParser
 
 from flib.core.obo import OBO
+from flib.core.gmt import GMT
 
 parser = argparse.ArgumentParser(description='Generate propagated gene annotation lists from ontology and association files')
 parser.add_argument(
@@ -34,6 +35,11 @@ parser.add_argument(
     type=int,
     help="The column of the annotations file containing the desired identifiers",
     default=1)
+parser.add_argument(
+    "-G",
+    "--gmt-file",
+    dest="gmt",
+    help="GMT file of gene associations")
 parser.add_argument(
     "-d",
     "--output-prefix",
@@ -106,6 +112,12 @@ if args.ass:
         args.ass,
         gene_col=args.gcol,
         term_col=args.term_col)
+elif args.gmt:
+    gmt = GMT(args.gmt)
+    gene_ontology.populate_annotations_from_gmt(gmt)
+else:
+    sys.stderr.write("--Provide gene annotations from an association file or a GMT file")
+    exit()
 
 if args.pub_filter:
     pub_counts = defaultdict(set)

@@ -316,6 +316,13 @@ class OBO:
         f.close()
         self.populated = True
 
+    def populate_annotations_from_gmt(self, gmt):
+        for (gsid, genes) in gmt.genesets.iteritems():
+            term = self.get_term(gsid)
+            if term:
+                for gid in genes:
+                    term.add_annotation(gid)
+
     def add_annotation(self, go_id, gid, ref, direct):
         go_term = self.get_term(go_id)
         if not go_term:

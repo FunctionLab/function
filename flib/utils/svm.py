@@ -53,11 +53,7 @@ else:
 if args.gmt:
     # Load GMT genes onto Disease Ontology and propagate
     gmt = GMT(filename=args.gmt)
-    for (gsid, genes) in gmt.genesets.iteritems():
-        term = onto.get_term(gsid)
-        for gid in genes:
-            term.add_annotation(gid)
-
+    onto.populate_annotations_from_gmt(gmt)
     onto.propagate()
 
     # Filter terms by number of gene annotations
