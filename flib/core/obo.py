@@ -436,7 +436,7 @@ class OBO:
                 genes.add(annotation.gid)
             if len(genes) > 0:
                 print >> f, term.go_id + '\t' + term.name + \
-                    ' (' + str(len(genes)) + ')\t' + '\t'.join(genes)
+                    '\t' + '\t'.join(genes)
         f.close()
 
     def print_to_mat_file(self, out_file, terms=None, p_namespace=None):
