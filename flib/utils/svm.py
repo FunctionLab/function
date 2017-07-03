@@ -57,13 +57,13 @@ if args.gmt:
     onto.propagate()
 
     # Filter terms by number of gene annotations
-    terms = [term.go_id for term in do.get_termobject_list() \
+    terms = [term.go_id for term in onto.get_termobject_list() \
         if len(term.annotations) >= MIN_POS and len(term.annotations) <= MAX_POS]
 
     # Build ontology aware labels
     lines = open('../../files/do_slim.txt').readlines()
     slim_terms = set([l.strip() for l in lines])
-    labels = OntoLabels(obo=do, slim_terms=slim_terms)
+    labels = OntoLabels(obo=onto, slim_terms=slim_terms)
 elif args.dir:
     labels = Labels(labels_dir=args.dir)
     terms = [term for term in labels.get_terms() \
