@@ -2,7 +2,7 @@ import argparse
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 
 from optparse import OptionParser
 
@@ -74,7 +74,6 @@ parser.add_argument(
     "-n",
     "--namespace",
     dest="nspace",
-    default="biological_process",
     help="limit the GO term output to the input namespace: (biological_process, cellular_component, molecular_function)",
     metavar="STRING")
 parser.add_argument(
