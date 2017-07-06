@@ -6,7 +6,7 @@
         
 ## Development setup
 
-Create an virtualenv and activate it:
+Create a virtualenv and activate it:
 
         $ virtualenv fenv
         $ source fenv/bin/activate
