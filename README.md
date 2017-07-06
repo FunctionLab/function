@@ -1,6 +1,22 @@
 # Function Library
 
-## Installation
-
+## Installation with pip
 
         $ pip install git+https://github.com/FunctionLab/function.git@master
+        
+## Development setup
+
+Create an virtualenv and activate it:
+
+        $ virtualenv fenv
+        $ source fenv/bin/activate
+    
+### Clone from GitHub
+
+        $ git clone git@github.com:FunctionLab/function.git
+        
+### Install dependencies
+
+        $ pip install -r requirements.txt
+        
+        
