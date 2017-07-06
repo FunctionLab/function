@@ -17,6 +17,5 @@ Create a virtualenv and activate it:
         
 ### Install dependencies
 
-        $ pip install -r requirements.txt
-        
-        
+        $ cd function
+        $ pip install -r requirements.txt        
