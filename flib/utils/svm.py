@@ -28,6 +28,8 @@ parser.add_argument('--dir', '-d', dest='dir', type=str,
 parser.add_argument('--all', '-a', dest='predict_all', action='store_true',
                                 default=False,
                                 help='Predict all genes')
+parser.add_argument('--slim', '-s', dest='slim', type=str,
+                                help='File of slim terms')
 parser.add_argument('--threads', '-t', dest='threads', type=int,
                                 default=12,
                                 help='Number of threads')
@@ -60,10 +62,14 @@ if args.gmt:
     terms = [term.go_id for term in onto.get_termobject_list() \
         if len(term.annotations) >= MIN_POS and len(term.annotations) <= MAX_POS]
 
-    # Build ontology aware labels
-    lines = open('../../files/do_slim.txt').readlines()
-    slim_terms = set([l.strip() for l in lines])
-    labels = OntoLabels(obo=onto, slim_terms=slim_terms)
+    if args.slim:
+        # Build ontology aware labels
+        lines = open(args.slim).readlines()
+        slim_terms = set([l.strip() for l in lines])
+        labels = OntoLabels(obo=onto, slim_terms=slim_terms)
+    else:
+        labels = Labels(gmt=gmt)
+
 elif args.dir:
     labels = Labels(labels_dir=args.dir)
     terms = [term for term in labels.get_terms() \
