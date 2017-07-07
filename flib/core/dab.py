@@ -136,6 +136,14 @@ class Dab(object):
     def get_gene(self, id):
         return self.gene_list[id]
 
+    def get_value_genes(self, gene1, gene2):
+        g1 = self.get_index(gene1)
+        g2 = self.get_index(gene2)
+        if g1 is None or g2 is None:
+            return None
+        else:
+            return self.get_value(g1, g2)
+
     def get_value(self, gene1, gene2):
         g1 = min(gene1, gene2)
         g2 = max(gene1, gene2)
@@ -191,7 +199,7 @@ class Dab(object):
                 print(self.gene_list[i] + '\t' +
                       self.gene_list[j] + '\t' + str(self.get_value(i, j)),
                       file=out_file)
-
+    '''
     def get_neighbors(self, gene_str, cutoff):
         neighbors = set()
         gene_id = self.get_index(gene_str)
@@ -241,7 +249,7 @@ class Dab(object):
             n_vals[i] = self.get_value(gene_id, i)
 
         return n_vals
-
+    '''
     def get(self, gene_str):
         vals = []
         idx = self.get_index(gene_str)
