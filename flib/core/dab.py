@@ -9,6 +9,7 @@ from __future__ import print_function
 import sys
 import array
 import logging
+import math
 
 logger = logging.getLogger(__name__)
 
@@ -18,13 +19,16 @@ class Dab(object):
     def __init__(self, filename):
         self.gene_list = []
         self.gene_table = {}
-        self.open_file(filename)
+        if filename.endswith('.qdab'):
+            self.open_file(filename, qdab = True)
+        else:
+            self.open_file(filename)
         self.gene_index = {}
         for i in range(len(self.gene_list)):
             self.gene_index[self.gene_list[i]] = i
         logger.debug("Got %s genes.", len(self.gene_list))
 
-    def open_file(self, filename):
+    def open_file(self, filename, qdab=False):
         logger.debug("Opening %s", filename)
         dab_file = open(filename, 'rb')
 
@@ -57,11 +61,72 @@ class Dab(object):
                 logger.debug("Read %s gene names.", count)
             end += 1
 
-        # get half matrix values
-        total = size * (size - 1) // 2
-        dab_file.seek(start)
-        self.dat = array.array('f')
-        self.dat.fromfile(dab_file, total)
+        if qdab:
+            # get number of bins
+            dab_file.seek(start)
+            a = array.array('B')
+            a.fromfile(dab_file, 1)
+            nbins = a[0]
+            logger.debug("Number of bins: %s .",nbins)
+            start=start+1
+
+            # get the bin boundaries
+            a = array.array('f')
+            a.fromfile(dab_file, nbins)
+            boundaries = a
+            logger.debug("Bin boundaries: %s .",boundaries)
+            start=start+4*len(boundaries)
+
+            # get number of bits (+1 for NaN)
+            nbits = int(math.ceil(math.log(nbins+1,2)))
+            nan_val = math.pow(2,nbits)-1
+            logger.debug("Number of bits for each value: %s .",nbits)
+
+
+            # get half matrix values
+            total = size * (size - 1) // 2
+
+            a = array.array('B')
+            a.fromfile(dab_file,1)
+            bufferA = a[0]
+            a = array.array('B')
+            a.fromfile(dab_file,1)
+            bufferB = a[0]
+
+            iTotal = 0
+            self.dat = array.array('f')
+            for i in range(size-1):
+                for j in range(0,size-i-1):
+                    try:
+                        iPos = (iTotal *nbits) % 8
+                        if iPos + nbits > 8:
+                            btmpb = (bufferA << iPos)
+                            btmpf = ((bufferB >> (16 - nbits - iPos)) << (8-nbits))
+                            self.dat.append((((btmpb | btmpf)& 0x000000FF) >> (8 - nbits)))
+                            bufferA = bufferB
+                            a = array.array('B')
+                            a.fromfile(dab_file,1)
+                            bufferB = a[0]
+                        else:
+                            self.dat.append((((bufferA << iPos) & 0x000000FF) >> (8 - nbits)))
+                            if iPos + nbits == 8:
+                                bufferA = bufferB
+                                a = array.array('B')
+                                a.fromfile(dab_file,1)
+                                bufferB = a[0]
+                    except:
+                        #check we are reaching the boundary of the file
+                        assert iTotal - len(self.dat) <= 1 + 8 // nbits
+
+                    iTotal = iTotal + 1
+                    if self.dat[-1] ==  nan_val:
+                        self.dat[-1] = float('nan')
+        else:
+            # get half matrix values
+            total = size * (size - 1) // 2
+            dab_file.seek(start)
+            self.dat = array.array('f')
+            self.dat.fromfile(dab_file, total)
 
         assert len(self.dat) == total
 
