@@ -13,7 +13,6 @@ import math
 
 logger = logging.getLogger(__name__)
 
-
 class Dab(object):
 
     def __init__(self, filename):
@@ -120,7 +119,7 @@ class Dab(object):
 
                     iTotal = iTotal + 1
                     if self.dat[-1] ==  nan_val:
-                        self.dat[-1] = float('nan')
+                        self.dat[-1] = float('inf')
         else:
             # get half matrix values
             total = size * (size - 1) // 2
@@ -175,6 +174,28 @@ class Dab(object):
     def arith_sum(self, x, y):
         return .5 * (y - x + 1) * (x + y)
 
+
+    def get(self, gene_str):
+        vals = []
+        idx = self.get_index(gene_str)
+        if idx is None:
+            return vals
+
+        for i in range(0, idx):
+            # Get values from 0 to idx (not including idx)
+            v = self.get_value(i, idx)
+            vals.append(v)
+
+        # Append self interaction value
+        vals.append(1)
+
+        start = self.arith_sum((len(self.gene_list)) - idx,
+                               (len(self.gene_list) - 1))
+        vals += self.dat[int(start):int(start) + len(self.gene_list) - (idx+1)]
+
+        return vals
+
+
     def print_table(self, out_file=sys.stdout):
         cols = ['GENE']
         cols.extend(self.gene_list)
@@ -199,77 +220,6 @@ class Dab(object):
                 print(self.gene_list[i] + '\t' +
                       self.gene_list[j] + '\t' + str(self.get_value(i, j)),
                       file=out_file)
-    '''
-    def get_neighbors(self, gene_str, cutoff):
-        neighbors = set()
-        gene_id = self.get_index(gene_str)
-        if gene_id is None:
-            return neighbors
-        for i in range(0, len(self.gene_list)):
-            if self.get_value(gene_id, i) > cutoff:
-                neighbors.add(self.gene_list[i])
-        return neighbors
-
-    def get_all_neighbor_vals(self, gene_id):
-        vals = list()
-        # gene_id = self.get_index(gene_str)
-        if gene_id is None:
-            return vals
-
-        for i in range(gene_id):
-            vals.append(self.get_value(gene_id, i))
-        for i in range(gene_id + 1, self.get_size()):
-            vals.append(self.get_value(gene_id, i))
-
-        return vals
-
-    def get_all_scaled_neighbor_vals(self, gene_id, prior_new, prior_old):
-        vals = list()
-        if gene_id is None:
-            return vals
-
-        for i in range(gene_id):
-            vals.append(self.get_scaled_value(gene_id, i, prior_new,
-                                              prior_old))
-        for i in range(gene_id + 1, self.get_size()):
-            vals.append(self.get_scaled_value(gene_id, i, prior_new,
-                                              prior_old))
-
-        return vals
-
-    def get_all_neighbor_val_dict(self, gene_id):
-        n_vals = dict()
-
-        if gene_id is None:
-            return n_vals
-
-        for i in range(gene_id):
-            n_vals[i] = self.get_value(gene_id, i)
-        for i in range(gene_id + 1, self.get_size()):
-            n_vals[i] = self.get_value(gene_id, i)
-
-        return n_vals
-    '''
-    def get(self, gene_str):
-        vals = []
-        idx = self.get_index(gene_str)
-        if idx is None:
-            return vals
-
-        for i in range(0, idx):
-            # Get values from 0 to idx (not including idx)
-            v = self.get_value(i, idx)
-            vals.append(v)
-
-        # Append self interaction value
-        vals.append(1)
-
-        start = self.arith_sum((len(self.gene_list)) - idx,
-                               (len(self.gene_list) - 1))
-        vals += self.dat[int(start):int(start) + len(self.gene_list) - (idx+1)]
-
-        return vals
-
 
 
 if __name__ == '__main__':
