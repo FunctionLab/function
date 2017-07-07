@@ -10,7 +10,6 @@ import sys
 import array
 import logging
 import math
-import ctypes
 
 logger = logging.getLogger(__name__)
 
