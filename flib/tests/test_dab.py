@@ -27,19 +27,17 @@ class TestDab(unittest.TestCase):
         for l in self.dat:
             g1, g2, value = l.strip().split('\t')
             val = float(value)
-            dat_val = self.dab.get_value_genes(g1,g2)
+            dat_val = self.dab.get_value_genestr(g1,g2)
             assert numpy.isclose(val, dat_val, rtol=1e-05, atol=1e-08)
 
     def testGet(self):
-        return
-
-    def testOpenQdab(self):
-        return
-
-    def testQdabGetValue(self):
-        return
-
-    def testQdabGet(self):
-        return
-
+        for i,g1 in enumerate(self.dab.gene_list):
+            vals = self.dab.get(g1)
+            for j,g2 in enumerate(self.dab.gene_list):
+                if g1 == g2:
+                    # Self interaction should be 1
+                    self.assertEqual(vals[j],1)
+                else:
+                    # Test the values from dab.get match dab.get_value
+                    self.assertEqual(vals[j], self.dab.get_value_genestr(g1,g2))
 

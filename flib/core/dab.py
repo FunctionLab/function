@@ -136,7 +136,7 @@ class Dab(object):
     def get_gene(self, id):
         return self.gene_list[id]
 
-    def get_value_genes(self, gene1, gene2):
+    def get_value_genestr(self, gene1, gene2):
         g1 = self.get_index(gene1)
         g2 = self.get_index(gene2)
         if g1 is None or g2 is None:
