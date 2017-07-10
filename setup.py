@@ -8,7 +8,6 @@ with open('requirements.txt') as f:
         if not l.strip().startswith('#'):
             reqs.append(l.strip())
 
-
 # Keyword order: https://packaging.python.org/distributing
 setup(
     # These 9 fields are inserted into PKG-INFO. Unspecified keys are set to
