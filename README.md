@@ -19,3 +19,8 @@ Create a virtualenv and activate it:
 
         $ cd function
         $ pip install -r requirements.txt        
+
+
+## Unit tests
+
+        $ python -m unittest discover flib/tests/
