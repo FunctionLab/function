@@ -41,8 +41,6 @@ class TestOBO(unittest.TestCase):
             term_count += len(term.get_annotated_genes())
 
         self.assertEqual(term_count, 26)
-        ancestors_count = len(self.go.get_ancestors(term.go_id))
-        self.assertEqual(term_count, ancestors_count+1)
 
     def tearDown(self):
         self.go = None
