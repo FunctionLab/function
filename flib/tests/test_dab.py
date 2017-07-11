@@ -21,14 +21,14 @@ class TestDab(unittest.TestCase):
     def tearDown(self):
         return
 
-    def testOpenDab(self):
+    def test_open_dab(self):
         # Test the total number of loaded genes
         self.assertEqual(len(self.dab.gene_list), 16)
 
         # Test the total number of values (16 choose 2)
         self.assertEqual(len(self.dab.dat), 120)
 
-    def testGetValue(self):
+    def test_get_value(self):
         # Test the values from Dab class with values from dab exported as dat
         for l in self.dat:
             g1, g2, value = l.strip().split('\t')
@@ -36,7 +36,7 @@ class TestDab(unittest.TestCase):
             dat_val = self.dab.get_value_genestr(g1,g2)
             assert numpy.isclose(val, dat_val, rtol=1e-05, atol=1e-08)
 
-    def testGet(self):
+    def test_get(self):
         for i,g1 in enumerate(self.dab.gene_list):
             vals = self.dab.get(g1)
             for j,g2 in enumerate(self.dab.gene_list):
@@ -47,14 +47,14 @@ class TestDab(unittest.TestCase):
                     # Test the values from dab.get match dab.get_value
                     self.assertEqual(vals[j], self.dab.get_value_genestr(g1,g2))
 
-    def testOpenQdab(self):
+    def test_open_qdab(self):
         # Test the total number of loaded genes
         self.assertEqual(len(self.qdab.gene_list), 16)
 
         # Test the total number of values (16 choose 2)
         self.assertEqual(len(self.qdab.dat), 120)
 
-    def testQdabGetValue(self):
+    def test_qdab_get_value(self):
         # Test the values from Dab class with values from dab exported as dat
         for l in self.qdab_dat:
             g1, g2, value = l.strip().split('\t')
@@ -62,7 +62,7 @@ class TestDab(unittest.TestCase):
             dat_val = self.qdab.get_value_genestr(g1,g2)
             assert numpy.isclose(val, dat_val, rtol=1e-05, atol=1e-08)
 
-    def testQdabGet(self):
+    def test_qdab_get(self):
         for i,g1 in enumerate(self.qdab.gene_list):
             vals = self.qdab.get(g1)
             for j,g2 in enumerate(self.qdab.gene_list):
