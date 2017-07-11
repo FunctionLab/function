@@ -9,8 +9,9 @@ from collections import defaultdict
 from sklearn.metrics import roc_auc_score, average_precision_score
 
 usage = "usage: %prog [options]"
-parser = OptionParser(usage, version = "%prog dev-unreleased")
-parser.add_option("-d", "--dir", dest="dir", help="svmperf directory", metavar="FILE")
+parser = OptionParser(usage, version="%prog dev-unreleased")
+parser.add_option("-d", "--dir", dest="dir",
+                  help="svmperf directory", metavar="FILE")
 
 (options, args) = parser.parse_args()
 
@@ -34,4 +35,4 @@ for f in files:
     labels, scores, probs = np.array(labels), np.array(scores), np.array(probs)
 
     print f, average_precision_score(labels, scores), roc_auc_score(labels, scores), \
-            average_precision_score(labels, probs), roc_auc_score(labels, probs)
+        average_precision_score(labels, probs), roc_auc_score(labels, probs)

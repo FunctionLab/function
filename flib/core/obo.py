@@ -10,6 +10,7 @@ from idmap import IDMap
 from gmt import GMT
 import urllib2
 
+
 class OBO:
     heads = None
     go_terms = None
@@ -146,7 +147,6 @@ class OBO:
 
         return True
 
-
     def propagate(self):
         """Propagate all gene annotations"""
         logger.info("Propagate gene annotations")
@@ -255,7 +255,6 @@ class OBO:
             for annotation in term.annotations:
                 gmt.add_gene(term.go_id, annotation.gid)
         return gmt
-
 
     def map_genes(self, id_name):
         """Map gene names using the idmap object id_name"""
@@ -416,7 +415,9 @@ class OBO:
                                 # if cross annotated, where the annotation is
                                 # from
                                 annotation.origin if annotation.cross_annotated else '',
-                                # if cross annotated, then the evidence of the cross_annotation (e.g. bootstrap value, p-value)
+                                # if cross annotated, then the evidence of the
+                                # cross_annotation (e.g. bootstrap value,
+                                # p-value)
                                 str(annotation.ortho_evidence) if annotation.ortho_evidence else '', '', '']
                     print >> f, '\t'.join([str(x) for x in to_print])
                 else:
@@ -468,6 +469,7 @@ class OBO:
                 row.append('1' if termid in genedict[g] else '0')
             print >> f, '\t'.join(row)
         f.close()
+
 
 class Annotation(object):
 
@@ -633,5 +635,3 @@ class GOTerm:
             return self.xrefs[dbid]
         else:
             return None
-
-

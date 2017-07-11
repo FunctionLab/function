@@ -29,12 +29,12 @@ class HGMD:
             cur = con.cursor()
 
             cur.execute('select gene, tag, phenotype, cui from hgmd_pro.allmut '
-                'join hgmd_phenbase.hgmd_mutation on '
-                'hgmd_pro.allmut.acc_num = hgmd_phenbase.hgmd_mutation.acc_num '
-                'join hgmd_phenbase.hgmd_phenotype on '
-                'hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.hgmd_mutation.phen_id '
-                'join hgmd_phenbase.phenotype_concept on '
-                'hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.phenotype_concept.phen_id')
+                        'join hgmd_phenbase.hgmd_mutation on '
+                        'hgmd_pro.allmut.acc_num = hgmd_phenbase.hgmd_mutation.acc_num '
+                        'join hgmd_phenbase.hgmd_phenotype on '
+                        'hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.hgmd_mutation.phen_id '
+                        'join hgmd_phenbase.phenotype_concept on '
+                        'hgmd_phenbase.hgmd_phenotype.phen_id = hgmd_phenbase.phenotype_concept.phen_id')
             rows = cur.fetchall()
             for row in rows:
                 gene, tag, phenotype, cui = row

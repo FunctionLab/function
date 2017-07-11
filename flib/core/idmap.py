@@ -7,7 +7,8 @@ logger.setLevel(logging.WARNING)
 
 
 class IDMap:
-    def __init__(self, filename = None, key_map = None):
+
+    def __init__(self, filename=None, key_map=None):
         self._key_val = {}
         idfile = list
         if filename is not None:
@@ -40,5 +41,5 @@ class IDMap:
         else:
             return self._key_val[id]
 
-    def __getitem__(self,arg):
+    def __getitem__(self, arg):
         return self.get(arg)

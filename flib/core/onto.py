@@ -6,7 +6,9 @@ DO_NAME = 'Disease Ontology'
 GO_URL = 'http://geneontology.org/ontology/go.obo'
 GO_NAME = 'Gene Ontology'
 
+
 class Ontology:
+
     @staticmethod
     def generate(obo_file=None, obo_url=None):
         onto = OBO()
@@ -16,12 +18,16 @@ class Ontology:
             onto.load_obo(obo_url, remote_location=True, timeout=5)
         return onto
 
+
 class DiseaseOntology():
+
     @staticmethod
     def generate():
-        return Ontology.generate(obo_url = DO_URL)
+        return Ontology.generate(obo_url=DO_URL)
+
 
 class GeneOntology:
+
     @staticmethod
     def generate():
-        return Ontology.generate(obo_url = GO_URL)
+        return Ontology.generate(obo_url=GO_URL)

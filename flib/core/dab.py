@@ -13,13 +13,14 @@ import math
 
 logger = logging.getLogger(__name__)
 
+
 class Dab(object):
 
     def __init__(self, filename):
         self.gene_list = []
         self.gene_table = {}
         if filename.endswith('.qdab'):
-            self.open_file(filename, qdab = True)
+            self.open_file(filename, qdab=True)
         else:
             self.open_file(filename)
         self.gene_index = {}
@@ -48,7 +49,7 @@ class Dab(object):
                 dab_file.seek(start)
 
                 gene = dab_file.read(end - start).decode().strip()
-                gene = gene.replace('\x00','')
+                gene = gene.replace('\x00', '')
 
                 self.gene_list.append(gene)
                 self.gene_table[gene] = count
@@ -66,59 +67,61 @@ class Dab(object):
             a = array.array('B')
             a.fromfile(dab_file, 1)
             nbins = a[0]
-            logger.debug("Number of bins: %s .",nbins)
-            start=start+1
+            logger.debug("Number of bins: %s .", nbins)
+            start = start + 1
 
             # get the bin boundaries
             a = array.array('f')
             a.fromfile(dab_file, nbins)
             boundaries = a
-            logger.debug("Bin boundaries: %s .",boundaries)
-            start=start+4*len(boundaries)
+            logger.debug("Bin boundaries: %s .", boundaries)
+            start = start + 4 * len(boundaries)
 
             # get number of bits (+1 for NaN)
-            nbits = int(math.ceil(math.log(nbins+1,2)))
-            nan_val = math.pow(2,nbits)-1
-            logger.debug("Number of bits for each value: %s .",nbits)
-
+            nbits = int(math.ceil(math.log(nbins + 1, 2)))
+            nan_val = math.pow(2, nbits) - 1
+            logger.debug("Number of bits for each value: %s .", nbits)
 
             # get half matrix values
             total = size * (size - 1) // 2
 
             a = array.array('B')
-            a.fromfile(dab_file,1)
+            a.fromfile(dab_file, 1)
             bufferA = a[0]
             a = array.array('B')
-            a.fromfile(dab_file,1)
+            a.fromfile(dab_file, 1)
             bufferB = a[0]
 
             iTotal = 0
             self.dat = array.array('f')
-            for i in range(size-1):
-                for j in range(0,size-i-1):
+            for i in range(size - 1):
+                for j in range(0, size - i - 1):
                     try:
-                        iPos = (iTotal *nbits) % 8
+                        iPos = (iTotal * nbits) % 8
                         if iPos + nbits > 8:
                             btmpb = (bufferA << iPos)
-                            btmpf = ((bufferB >> (16 - nbits - iPos)) << (8-nbits))
-                            self.dat.append((((btmpb | btmpf)& 0x000000FF) >> (8 - nbits)))
+                            btmpf = ((bufferB >> (16 - nbits - iPos))
+                                     << (8 - nbits))
+                            self.dat.append(
+                                (((btmpb | btmpf) & 0x000000FF) >> (8 - nbits)))
                             bufferA = bufferB
                             a = array.array('B')
-                            a.fromfile(dab_file,1)
+                            a.fromfile(dab_file, 1)
                             bufferB = a[0]
                         else:
-                            self.dat.append((((bufferA << iPos) & 0x000000FF) >> (8 - nbits)))
+                            self.dat.append(
+                                (((bufferA << iPos) & 0x000000FF) >> (8 - nbits)))
                             if iPos + nbits == 8:
                                 bufferA = bufferB
                                 a = array.array('B')
-                                a.fromfile(dab_file,1)
+                                a.fromfile(dab_file, 1)
                                 bufferB = a[0]
                     except:
-                        #check we are reaching the boundary of the file
+                        # check we are reaching the boundary of the file
                         assert iTotal - len(self.dat) <= 1 + 8 // nbits
 
                     iTotal = iTotal + 1
-                    if self.dat[-1] ==  nan_val:
+                    if self.dat[-1] == nan_val:
                         self.dat[-1] = float('inf')
         else:
             # get half matrix values
@@ -174,7 +177,6 @@ class Dab(object):
     def arith_sum(self, x, y):
         return .5 * (y - x + 1) * (x + y)
 
-
     def get(self, gene_str):
         vals = []
         idx = self.get_index(gene_str)
@@ -191,10 +193,10 @@ class Dab(object):
 
         start = self.arith_sum((len(self.gene_list)) - idx,
                                (len(self.gene_list) - 1))
-        vals += self.dat[int(start):int(start) + len(self.gene_list) - (idx+1)]
+        vals += self.dat[int(start):int(start) +
+                         len(self.gene_list) - (idx + 1)]
 
         return vals
-
 
     def print_table(self, out_file=sys.stdout):
         cols = ['GENE']

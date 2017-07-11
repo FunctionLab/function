@@ -32,12 +32,14 @@ class GWASCatalog:
         xrefs = onto.get_xref_mapping('EFO')
 
         for (trait, uri), genes in self._data.iteritems():
-            uids = [x.split('/')[-1].replace('EFO_','') for x in uri.split(',')]
+            uids = [x.split('/')[-1].replace('EFO_', '')
+                    for x in uri.split(',')]
             if len(uids) > 1:
                 logger.info('Multiple mappings %s', uri)
                 continue
 
-            terms = [onto.get_term(termid) for uid in uids for termid in xrefs[uid]]
+            terms = [onto.get_term(termid)
+                     for uid in uids for termid in xrefs[uid]]
             for term in terms:
                 for gene in genes:
                     mapped_genes = idmap[gene] if idmap else (gene,)

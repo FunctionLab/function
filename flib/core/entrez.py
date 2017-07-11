@@ -52,10 +52,10 @@ class Entrez:
             return None
 
     def get_symbol_map(self):
-        return IDMap(key_map = self._symbols)
+        return IDMap(key_map=self._symbols)
 
     def get_xref_map(self):
-        return IDMap(key_map = self._xrefs)
+        return IDMap(key_map=self._xrefs)
 
 if __name__ == '__main__':
     entrez = Entrez()

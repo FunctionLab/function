@@ -3,6 +3,7 @@ import os
 from collections import defaultdict
 from omim import OMIM
 
+
 class Labels:
 
     def __init__(self, labels_dir=None, gmt=None, pos_label='1', neg_label='-1'):
@@ -32,9 +33,10 @@ class Labels:
     def get_terms(self):
         return self._standards.keys()
 
+
 class OntoLabels:
 
-    def __init__(self, obo = None, slim_terms = None):
+    def __init__(self, obo=None, slim_terms=None):
         self._slim_terms = slim_terms
         self._obo = obo
 
@@ -72,4 +74,3 @@ if __name__ == '__main__':
     ol = OntoLabels(obo=do, slim_terms=slim_terms)
     (pos1, neg1) = ol.get_labels('DOID:0060041')
     print len(pos1), len(neg1)
-

@@ -21,11 +21,13 @@ from omim import OMIM
 from onto import DiseaseOntology
 from labels import OntoLabels
 
+
 class NetworkSVM:
 
-    default_params = {'C':50, 'class_weight':'balanced'}
+    default_params = {'C': 50, 'class_weight': 'balanced'}
     tuned_parameters = [
-        {'C': [.0001, .001, .01, .1, 1, 10, 100], 'class_weight':['balanced', None]},
+        {'C': [.0001, .001, .01, .1, 1, 10, 100],
+            'class_weight':['balanced', None]},
     ]
 
     def __init__(self, dab):
@@ -34,7 +36,8 @@ class NetworkSVM:
     def _dab_matrix(self):
         if not self._X_all:
             # Load dab as matrix
-            self._X_all = np.empty([self._dab.get_size(), self._dab.get_size()])
+            self._X_all = np.empty(
+                [self._dab.get_size(), self._dab.get_size()])
             for i, g in enumerate(self._dab.gene_list):
                 if not i % 1000:
                     logger.info('Loaded %i', i)
@@ -42,15 +45,16 @@ class NetworkSVM:
         return self._X_all
 
     def predict(self, pos_genes, neg_genes,
-            predict_all=False,
-            best_params=False,
-            prob_fit='SIGMOID',
-            cv_folds=5):
+                predict_all=False,
+                best_params=False,
+                prob_fit='SIGMOID',
+                cv_folds=5):
 
         logger.info("Running %i fold SVM", cv_folds)
 
         # Group training genes
-        train_genes = [g for g in (pos_genes | neg_genes) if self._dab.get_index(g) is not None]
+        train_genes = [g for g in (pos_genes | neg_genes)
+                       if self._dab.get_index(g) is not None]
         train_genes_idx = [self._dab.get_index(g) for g in train_genes]
 
         # Subset training matrix and labels
@@ -74,13 +78,15 @@ class NetworkSVM:
             clf.fit(X, y)
             params = clf.best_params_
 
-        train_scores, train_probs = np.empty(len(train_genes)), np.empty(len(train_genes))
+        train_scores, train_probs = np.empty(
+            len(train_genes)), np.empty(len(train_genes))
         train_scores[:], train_probs[:] = np.NAN, np.NAN
         scores, probs = None, None
 
         kf = StratifiedKFold(n_splits=cv_folds)
         for cv, (train, test) in enumerate(kf.split(X, y)):
-            X_train, X_test, y_train, y_test = X[train], X[test], y[train], y[test]
+            X_train, X_test, y_train, y_test = X[
+                train], X[test], y[train], y[test]
 
             logger.info('Learning SVM')
             clf = LinearSVC(**params)
@@ -89,33 +95,34 @@ class NetworkSVM:
             logger.info('Predicting SVM')
             if predict_all:
                 scores_cv = clf.decision_function(X_all)
-                scores = scores_cv if scores is None else np.column_stack((scores, scores_cv))
+                scores = scores_cv if scores is None else np.column_stack(
+                    (scores, scores_cv))
 
                 for idx in test:
                     train_scores[idx] = scores_cv[train_genes_idx[idx]]
             else:
                 scores_cv = clf.decision_function(X_test)
-                for i,idx in enumerate(test):
+                for i, idx in enumerate(test):
                     train_scores[idx] = scores_cv[i]
 
         if prob_fit == 'ISO':
             ir = IsotonicRegression(out_of_bounds='clip')
-            Y = label_binarize(y, [-1,1])
-            ir.fit(train_scores, Y[:,0])
+            Y = label_binarize(y, [-1, 1])
+            ir.fit(train_scores, Y[:, 0])
             train_probs = ir.predict(train_scores)
         else:
-            Y = label_binarize(y, [-1,1])
+            Y = label_binarize(y, [-1, 1])
             sc = _SigmoidCalibration()
             sc.fit(train_scores, Y)
             train_probs = sc.predict(train_scores)
 
         if predict_all:
             scores = np.median(scores, axis=1)
-            for i,idx in enumerate(train_genes_idx):
+            for i, idx in enumerate(train_genes_idx):
                 scores[idx] = train_scores[i]
 
             probs = np.median(probs, axis=1)
-            for i,idx in enumerate(train_genes_idx):
+            for i, idx in enumerate(train_genes_idx):
                 probs[idx] = train_probs[i]
 
             genes = dab.gene_list
@@ -124,14 +131,14 @@ class NetworkSVM:
             genes = train_genes
             probs = train_probs
 
-
-        self._predictions = sorted(zip(genes, scores, probs), key=itemgetter(1), reverse=True)
+        self._predictions = sorted(
+            zip(genes, scores, probs), key=itemgetter(1), reverse=True)
 
         return self._predictions
 
     def print_predictions(self, ofile, pos_genes, neg_genes):
         with open(ofile, 'w') as outfile:
-            for (g,s,p) in self._predictions:
+            for (g, s, p) in self._predictions:
                 if g in pos_genes:
                     label = '1'
                 elif g in neg_genes:

@@ -9,7 +9,8 @@ from optparse import OptionParser
 from flib.core.obo import OBO
 from flib.core.gmt import GMT
 
-parser = argparse.ArgumentParser(description='Generate propagated gene annotation lists from ontology and association files')
+parser = argparse.ArgumentParser(
+    description='Generate propagated gene annotation lists from ontology and association files')
 parser.add_argument(
     "-o",
     "--obo-file",
@@ -115,7 +116,8 @@ elif args.gmt:
     gmt = GMT(args.gmt)
     gene_ontology.populate_annotations_from_gmt(gmt)
 else:
-    sys.stderr.write("--Provide gene annotations from an association file or a GMT file")
+    sys.stderr.write(
+        "--Provide gene annotations from an association file or a GMT file")
     exit()
 
 if args.pub_filter:
@@ -160,5 +162,5 @@ if args.ofile:
         args.assoc_format)
 else:
     gene_ontology.print_to_dir(args.opref,
-        gterms,
-        args.nspace)
+                               gterms,
+                               args.nspace)

@@ -121,8 +121,8 @@ if __name__ == '__main__':
         gs.write(options.output)
 
     else:
-        #lines = open(options.genef).readlines()
-        #genes = set()
+        # lines = open(options.genef).readlines()
+        # genes = set()
         # for l in lines:
         #    genes.add(l.strip())
 

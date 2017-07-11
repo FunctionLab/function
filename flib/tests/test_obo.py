@@ -5,6 +5,7 @@ from flib.core.obo import OBO
 
 GO_URL = 'http://cvsweb.geneontology.org/cgi-bin/cvsweb.cgi/~checkout~/go/ontology/gene_ontology.obo?rev=4.2451'
 
+
 class TestOBO(unittest.TestCase):
 
     def setUp(self):
