@@ -360,6 +360,8 @@ class OBO:
         parent_terms = set()
         for parent_term in term.child_of:
             if parent_term.namespace != term.namespace:
+                logger.info("Parent and child terms are different namespaces: %s and %s",
+                        parent_term, term)
                 continue
             parent_terms.add(parent_term.go_id)
             parent_terms = parent_terms | self.get_ancestors(parent_term.go_id)
