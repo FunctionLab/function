@@ -12,20 +12,9 @@ import urllib2
 
 
 class OBO:
-    heads = None
-    go_terms = None
-    alt_id2std_id = None
-    populated = None
-    s_orgs = None
-
-    # populate this field if you want to mark this GO as organism specific
-    go_organism_tax_id = None
-
-    """
-    Pass the obo file
-    """
 
     def __init__(self, obo_file=None):
+        """Initialize with optional obo file"""
         self.heads = []
         self.go_terms = {}
         self.go_obsolete = {}
@@ -519,28 +508,6 @@ class Annotation(object):
 
 
 class GOTerm:
-    go_id = ''
-    is_a = None
-    relationship = None
-    parent_of = None
-    child_of = None
-    annotations = None
-    alt_id = None
-    namespace = ''
-    included_in_all = None
-    valid_go_term = None
-    cross_annotated_genes = None
-    head = None
-    name = None
-    base_counts = None
-    counts = None
-    summary = None
-    desc = None
-    votes = None
-    synonyms = None
-    fullname = None
-    xrefs = None
-    obsolete = None
 
     def __init__(self, go_id):
         self.head = True
