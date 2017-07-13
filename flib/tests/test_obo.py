@@ -45,6 +45,23 @@ class TestOBO(unittest.TestCase):
 
         self.assertEqual(term_count, 26)
 
+    def test_direct_annotation(self):
+        """Test that direct annotation status is preserved"""
+        self.assertTrue(self.dsrepair_term is not None)
+
+        self.go.add_annotation(go_id=DSREPAIR_ID, gid='672', ref=None, direct=True)
+        self.go.propagate()
+
+        direct_count, total = 0, 0
+        for term in self.go.get_termobject_list():
+            for a in term.annotations:
+                if a.direct:
+                    direct_count += 1
+                    self.assertEqual(term, self.dsrepair_term)
+                total += 1
+        self.assertEqual(direct_count, 1)
+        self.assertEqual(total, 26)
+
     def test_ancestors(self):
         """Test that ancestor terms are correct"""
         self.assertTrue(self.dsrepair_term is not None)
