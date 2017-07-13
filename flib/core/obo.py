@@ -251,7 +251,7 @@ class OBO:
             reterms.append(obo_term)
         return reterms
 
-    def get_obsolete_terms(self, p_namespace=None):
+    def get_obsolete_terms(self):
         """Return list of all obsolete GOTerms"""
         logger.info('get_obsolete_list')
         return self.go_obsolete.values()

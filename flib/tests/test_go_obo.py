@@ -74,6 +74,25 @@ class TestOBO(unittest.TestCase):
         self.assertTrue(GOTerm('GO:0006302') in parents)
         self.assertTrue(GOTerm('GO:0000725') in parents)
 
+    def test_heads(self):
+        """Test that there are only three head nodes, corresponding to:
+        biological process, molecular function, and cellular component
+        """
+        heads = set([term for term in self.go.get_termobject_list() if term.head])
+        self.assertEqual(len(heads),3)
+
+        self.assertTrue(GOTerm('GO:0008150') in heads)
+        self.assertTrue(GOTerm('GO:0003674') in heads)
+        self.assertTrue(GOTerm('GO:0005575') in heads)
+
+    def test_obsolete(self):
+        """Test that none of the stored terms are obsolete"""
+        for term in self.go.get_termobject_list():
+            self.assertTrue(not term.obsolete)
+
+        for term in self.go.get_obsolete_terms():
+            self.assertTrue(term.obsolete)
+
     def test_term_equals(self):
         """Test GOTerm equals method"""
         self.assertEqual(self.dsrepair_term, GOTerm(DSREPAIR_ID) )
