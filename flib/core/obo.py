@@ -21,8 +21,7 @@ class OBO:
         self.alt_id2std_id = {}
         self.name2synonyms = {}
         self.populated = False
-        self.s_orgs = []
-        self.__meta = {}
+        self._meta = {}
 
         if obo_file:
             self.load_obo(obo_file)
@@ -44,31 +43,41 @@ class OBO:
             if len(fields) < 1:
                 continue
 
+            # Load the meta data commonly included at the
+            # start of the obo file.
+            # Example keys: format-version, data-version, etc
             elif not inside and not len(self.go_terms.keys()) and len(fields) > 1:
                 key = fields[0]
                 if key.endswith(':'):
                     key = key[:-1]
-                self.__meta[key] = fields[1]
+                self._meta[key] = fields[1]
+
+            # Term definition block
             elif fields[0] == '[Term]':
                 if gterm:
                     if gterm.head:
                         self.heads.append(gterm)
                 inside = True
+
+            # Relationship definition block
             elif fields[0] == '[Typedef]':
                 if gterm:
                     if gterm.head:
                         self.heads.append(gterm)
                 inside = False
 
+            # Term identifier field (e.g. GO:00008150)
             elif inside and fields[0] == 'id:':
-                # print fields[1]
                 if fields[1] in self.go_terms:
                     gterm = self.go_terms[fields[1]]
                 else:
                     gterm = GOTerm(fields[1])
                     self.go_terms[gterm.get_id()] = gterm
-                # print self.go_terms[fields[1]]
+
+            # Term name field (e.g. biological process)
             elif inside and fields[0] == 'name:':
+                # Term name is underscore delimited; term fullname is
+                # space delimited
                 fields.pop(0)
                 gterm.fullname = ' '.join(fields)
                 name = '_'.join(fields)
@@ -76,15 +85,25 @@ class OBO:
                 name = re.sub('[^\w\s_-]', '_', name).strip().lower()
                 name = re.sub('[-\s_]+', '_', name)
                 gterm.name = name
+
+            # Ontology namespace field (e.g. molecular function)
             elif inside and fields[0] == 'namespace:':
                 gterm.namespace = fields[1]
+
+            # Term definition field (e.g. "The maintenance of the...")
             elif inside and fields[0] == 'def:':
                 gterm.desc = ' '.join(fields[1:]).split('\"')[1]
+
+            # Alternative identifiers, likely historical, now obsolete terms
             elif inside and fields[0] == 'alt_id:':
                 gterm.alt_id.append(fields[1])
                 self.alt_id2std_id[fields[1]] = gterm.get_id()
+
+            # is_a relationship field
             elif inside and fields[0] == 'is_a:':
+                # If term has a parent, it can't be a head (root) term
                 gterm.head = False
+
                 fields.pop(0)
                 pgo_id = fields.pop(0)
                 if pgo_id not in self.go_terms:
@@ -93,18 +112,26 @@ class OBO:
                 gterm.is_a.append(self.go_terms[pgo_id])
                 self.go_terms[pgo_id].parent_of.add(gterm)
                 gterm.child_of.add(self.go_terms[pgo_id])
+
+            # Relationship field defined in Typedef
+            # e.g. "relationship: regulates GO:0000XXX"
             elif inside and fields[0] == 'relationship:':
                 if fields[1].find('has_part') != -1:
                     # has part is not a parental relationship -- it is actually
                     # for children.
                     continue
+
+                # If term has a parent, it can't be a head (root) term
                 gterm.head = False
+
                 pgo_id = fields[2]
                 if pgo_id not in self.go_terms:
                     self.go_terms[pgo_id] = GOTerm(pgo_id)
+
                 # Check which relationship you are with this parent go term
-                if fields[1] == 'regulates' or fields[
-                        1] == 'positively_regulates' or fields[1] == 'negatively_regulates':
+                if fields[1] == 'regulates' or \
+                        fields[1] == 'positively_regulates' or \
+                        fields[1] == 'negatively_regulates':
                     gterm.relationship_regulates.append(self.go_terms[pgo_id])
                 elif fields[1] == 'part_of':
                     gterm.relationship_part_of.append(self.go_terms[pgo_id])
@@ -115,11 +142,19 @@ class OBO:
                     continue
                 self.go_terms[pgo_id].parent_of.add(gterm)
                 gterm.child_of.add(self.go_terms[pgo_id])
+
+            # Term obsolete flag
             elif inside and fields[0] == 'is_obsolete:':
+                # If term is obsolete, it can't be a root term
                 gterm.head = False
+
+                # Only keep current terms
                 del self.go_terms[gterm.get_id()]
+
                 gterm.obsolete = True
                 self.go_obsolete[gterm.get_id()] = gterm
+
+            # Term name synonyms
             elif inside and fields[0] == 'synonym:':
                 syn = ' '.join(fields[1:]).split('\"')[1]
                 syn = syn.replace('lineage name: ', '')
@@ -128,10 +163,12 @@ class OBO:
                     self.name2synonyms[gterm.name].append(syn)
                 else:
                     self.name2synonyms[gterm.name] = [syn]
+
+            # Term id mapping to another resources (e.g. OMIM, Wikipedia)
             elif inside and fields[0] == 'xref:':
                 tok = fields[1].split(':')
                 if len(tok) > 1:
-                    (xrefdb, xrefid) = fields[1].split(':')[0:2]
+                    (xrefdb, xrefid) = tok[:2]
                     gterm.xrefs.setdefault(xrefdb, set()).add(xrefid)
 
         return True
@@ -141,15 +178,15 @@ class OBO:
         logger.info("Propagate gene annotations")
         for head_gterm in self.heads:
             logger.info("Propagating %s", head_gterm.name)
-            self.propagate_recurse(head_gterm)
+            self._propagate_recurse(head_gterm)
 
-    def propagate_recurse(self, gterm):
+    def _propagate_recurse(self, gterm):
         if not len(gterm.parent_of):
             logger.debug("Base case with term %s", gterm.name)
             return
 
         for child_term in gterm.parent_of:
-            self.propagate_recurse(child_term)
+            self._propagate_recurse(child_term)
             new_annotations = set()
 
             regulates_relation = (gterm in child_term.relationship_regulates)
@@ -157,11 +194,14 @@ class OBO:
 
             for annotation in child_term.annotations:
                 copied_annotation = None
-                # if this relation with child is a regulates(and its sub class)
+                # If this relation with child is a regulates (and its sub class)
                 # filter annotations
                 if regulates_relation:
-                    # only add annotations that didn't come from a part of or
-                    # regulates relationship
+                    # Only add annotations that didn't come from a part_of or
+                    # regulates relationship. "ready_regulates_cutoff" indicates
+                    # the annotation was propagated from a regulates or part_of
+                    # relationship already.
+                    # See: http://www.geneontology.org/page/ontology-relations##reg_reas
                     if annotation.ready_regulates_cutoff:
                         continue
                     else:
@@ -191,8 +231,8 @@ class OBO:
 
     def get_meta_data(self, key):
         """Return metadata in obo corresponding to key"""
-        if key in self.__meta:
-            return self.__meta[key]
+        if key in self._meta:
+            return self._meta[key]
         else:
             return None
 
@@ -215,14 +255,6 @@ class OBO:
         """Return list of all obsolete GOTerms"""
         logger.info('get_obsolete_list')
         return self.go_obsolete.values()
-
-    def get_termdict_list(self, terms=None, p_namespace=None):
-        logger.info('get_termdict_list')
-        tlist = self.get_termobject_list(terms=terms, p_namespace=p_namespace)
-        reterms = []
-        for obo_term in tlist:
-            reterms.append({'oboid': obo_term.go_id, 'name': obo_term.name})
-        return reterms
 
     def get_xref_mapping(self, prefix):
         """Return dict of terms mappings to external database ids"""
@@ -252,6 +284,7 @@ class OBO:
 
     def populate_annotations(self, annotation_file, xdb_col=0,
                              gene_col=None, term_col=None, ref_col=5, ev_col=6, date_col=13):
+        """Populate the ontology with gene annotations from an association file"""
         logger.info('Populate gene annotations: %s', annotation_file)
         details_col = 3
         f = open(annotation_file, 'r')
@@ -305,6 +338,7 @@ class OBO:
         self.populated = True
 
     def populate_annotations_from_gmt(self, gmt):
+        """Populate the ontology with gene annotations from a GMT file"""
         for (gsid, genes) in gmt.genesets.iteritems():
             term = self.get_term(gsid)
             if term:
@@ -312,6 +346,16 @@ class OBO:
                     term.add_annotation(gid)
 
     def add_annotation(self, go_id, gid, ref, direct):
+        """Add a gene annotation to a term
+        Args:
+            go_id:  term identifier
+            gid:    gene identifier
+            ref:    publication reference (e.g. pubmed id)
+            direct: boolean indicating direct or propagated annotation
+
+        Returns:
+            True for succes, False otherwise
+        """
         go_term = self.get_term(go_id)
         if not go_term:
             return False
@@ -331,6 +375,8 @@ class OBO:
         child_terms = set()
         for child_term in term.parent_of:
             if child_term.namespace != term.namespace:
+                logger.info("Parent and child terms are different namespaces: %s and %s",
+                        parent_term, term)
                 continue
             child_terms.add(child_term.go_id)
             child_terms = child_terms | self.get_descendents(child_term.go_id)
@@ -466,15 +512,31 @@ class Annotation(object):
 
     def __init__(self, xdb=None, gid=None, ref=None, evidence=None, date=None, direct=False,
                  cross_annotated=False, origin=None, ortho_evidence=None, ready_regulates_cutoff=False):
+        # Annotation source
         super(Annotation, self).__setattr__('xdb', xdb)
+        # Gene identifier
         super(Annotation, self).__setattr__('gid', gid)
+
+        # Publication reference
         super(Annotation, self).__setattr__('ref', ref)
+
+        # Evidence code
         super(Annotation, self).__setattr__('evidence', evidence)
+
+        # Date of annotation
         super(Annotation, self).__setattr__('date', date)
+
+        # Direct annotation or possibly propagated
         super(Annotation, self).__setattr__('direct', direct)
+
+        # Annotated from another organism
         super(Annotation, self).__setattr__('cross_annotated', cross_annotated)
         super(Annotation, self).__setattr__('origin', origin)
         super(Annotation, self).__setattr__('ortho_evidence', ortho_evidence)
+
+        # Boolean indicating whether the annotation can be propagated along a
+        # regulates relationship.
+        # See: http://www.geneontology.org/page/ontology-relations##reg_reas
         super(
             Annotation,
             self).__setattr__(
@@ -510,27 +572,59 @@ class Annotation(object):
 class GOTerm:
 
     def __init__(self, go_id):
+        # Indicator of whether the term is a root node
         self.head = True
+
+        # Term identifier
         self.go_id = go_id
+
+        # Set of gene annotations
         self.annotations = set([])
-        self.cross_annotated_genes = set([])
+
+        # List of is_a parents
         self.is_a = []
+
+        # List of regulates parents
+        # Note: if A regulates B, B is A's parent in gene ontology
         self.relationship_regulates = []
+
+        # List of part_of parents
         self.relationship_part_of = []
+
+        # All parent terms
         self.parent_of = set()
+
+        # All child terms
         self.child_of = set()
+
+        # Alternative IDs, likely to be obsolete
         self.alt_id = []
-        self.included_in_all = True
-        self.valid_go_term = True
-        self.name = None
-        self.base_counts = None
-        self.counts = None
+
+        # Term description
         self.desc = None
-        self.votes = set([])
-        self.synonyms = []
+
+        # Term name, delimited by underscores
+        self.name = None
+
+        # Official term name, unadulterated
         self.fullname = None
+
+        # Term name synonyms
+        self.synonyms = []
+
+        # Term ID mappings to other resources
         self.xrefs = {}
+
+        # Boolean indicated whether the term is now obsolete
         self.obsolete = False
+
+        # As far as I can tell, no longer used (7/13/2017)
+        # self.cross_annotated_genes = set([])
+        # self.included_in_all = True
+        # self.valid_go_term = True
+        # self.base_counts = None
+        # self.counts = None
+        # self.votes = set([])
 
     def __cmp__(self, other):
         return cmp(self.go_id, other.go_id)
@@ -543,7 +637,7 @@ class GOTerm:
 
     def get_id(self):
         return self.go_id
-
+#
     def map_genes(self, id_name):
         """Map gene ids"""
         mapped_annotations_set = set([])
