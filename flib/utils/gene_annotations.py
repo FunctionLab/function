@@ -101,10 +101,6 @@ if args.pub_filter and args.nspace is None:
         "--When filtering by publication, must provide GO namespace.\n")
     sys.exit()
 
-id_name = None
-if args.idfile is not None:
-    id_name = IDMap(args.idfile)
-
 gene_ontology = OBO(args.obo)
 
 logger.info('Populating gene associations')
@@ -138,6 +134,7 @@ if args.pub_filter:
                 term.remove_annotation(a)
 
 if args.idfile is not None:
+    id_name = IDMap(args.idfile)
     gene_ontology.map_genes(id_name)
 
 if args.propagate:
