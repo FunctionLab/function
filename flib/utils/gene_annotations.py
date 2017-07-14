@@ -8,6 +8,7 @@ from optparse import OptionParser
 
 from flib.core.obo import OBO
 from flib.core.gmt import GMT
+from flib.core.idmap import IDMap
 
 parser = argparse.ArgumentParser(
     description='Generate propagated gene annotation lists from ontology and association files')
