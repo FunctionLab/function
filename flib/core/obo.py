@@ -637,7 +637,7 @@ class GOTerm:
 
     def get_id(self):
         return self.go_id
-#
+
     def map_genes(self, id_name):
         """Map gene ids"""
         mapped_annotations_set = set([])

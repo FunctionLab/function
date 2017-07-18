@@ -108,12 +108,14 @@ for (tissue, stds) in tissue_std_edges.iteritems():
     c2 = within_edges_pos - c1
     c4 = within_edges_neg - c3
     if onto:
-        for dtissue in onto.get_descendents(onto.get_term(tissue)):
-            c2 -= tissue_std_edges[dtissue]['1']
-            c4 -= tissue_std_edges[dtissue]['0']
-        for atissue in onto.get_ancestors(onto.get_term(tissue)):
-            c2 -= tissue_std_edges[atissue]['1']
-            c4 -= tissue_std_edges[atissue]['0']
+        for dtissue in onto.get_descendents(tissue):
+            if dtissue in tissue_std_edges:
+                c2 -= tissue_std_edges[dtissue]['1']
+                c4 -= tissue_std_edges[dtissue]['0']
+        for atissue in onto.get_ancestors(tissue):
+            if atissue in tissue_std_edges:
+                c2 -= tissue_std_edges[atissue]['1']
+                c4 -= tissue_std_edges[atissue]['0']
 
     print tissue, len(c1_tspc), len(c1), len(c2), len(c3), len(c4)
 
