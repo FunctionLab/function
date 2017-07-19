@@ -90,6 +90,13 @@ parser.add_argument(
     action="store_true",
     default=False,
     help="Filter annotations from high-throughput publications (>50 annotations)")
+parser.add_argument(
+    "-r",
+    dest="remote_file",
+    action="store_true",
+    default=False,
+    help="Gene assocation file is a remote location")
+
 
 args = parser.parse_args()
 
@@ -107,6 +114,7 @@ logger.info('Populating gene associations')
 if args.ass:
     gene_ontology.populate_annotations(
         args.ass,
+        remote_location=args.remote_file,
         gene_col=args.gcol,
         term_col=args.term_col)
 elif args.gmt:

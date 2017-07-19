@@ -9,6 +9,8 @@ from collections import defaultdict
 from idmap import IDMap
 from gmt import GMT
 import urllib2
+import gzip
+import io
 
 
 class OBO:
@@ -282,15 +284,26 @@ class OBO:
         for go_term in self.go_terms.itervalues():
             go_term.map_genes(id_name)
 
-    def populate_annotations(self, annotation_file, xdb_col=0,
-                             gene_col=None, term_col=None, ref_col=5, ev_col=6, date_col=13):
+    def populate_annotations(self, annotation_file, remote_location=False, xdb_col=0,
+                             gene_col=1, term_col=4, ref_col=5, ev_col=6, date_col=13):
         """Populate the ontology with gene annotations from an association file"""
         logger.info('Populate gene annotations: %s', annotation_file)
+
+        if remote_location:
+            ass_file_zip = urllib2.urlopen(annotation_file, timeout=5)
+            if annotation_file.endswith('.gz'):
+                ass_file = gzip.GzipFile(fileobj=io.BytesIO(ass_file_zip.read()))
+                ass_file_zip.close()
+            lines = ass_file.readlines()
+        else:
+            ass_file = open(association_file, 'r')
+            lines = ass_file.readlines()
+
         details_col = 3
-        f = open(annotation_file, 'r')
-        for line in f:
-            if line[0] == '!':
+        for line in lines:
+            if line.startswith('!'):
                 continue
+
             fields = line.rstrip('\n').split('\t')
 
             xdb = fields[xdb_col]
@@ -324,7 +337,7 @@ class OBO:
             go_term = self.get_term(go_id)
             if go_term is None:
                 continue
-            logger.info('Gene %s and term %s', gene, go_term.go_id)
+            logger.debug('Gene %s and term %s', gene, go_term.go_id)
             annotation = Annotation(
                 xdb=xdb,
                 gid=gene,

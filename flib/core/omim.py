@@ -72,7 +72,7 @@ class OMIM:
             disorders = l_split[11].strip()
 
             if disorders != '' and status in LIMIT_STATUS and mim_geneid in mim_gene:
-                logger.info('%s with status %s', disorders, status)
+                logger.debug('%s with status %s', disorders, status)
 
                 geneid = mim_gene[mim_geneid]
                 tuple_gid_status = (geneid, status)
