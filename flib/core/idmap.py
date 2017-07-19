@@ -35,7 +35,7 @@ class IDMap:
         if self._key_val is None:
             logger.info('idmap::get called with no mapping file loaded')
             return []
-        elif id not in self._key_val or len(self._key_val[id]) == 0:
+        elif id not in self._key_val:
             logger.warning('No match for %s', id)
             return []
         else:
