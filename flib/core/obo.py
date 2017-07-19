@@ -347,7 +347,6 @@ class OBO:
                 direct=True)
             go_term.annotations.add(annotation)
 
-        f.close()
         self.populated = True
 
     def populate_annotations_from_gmt(self, gmt):
