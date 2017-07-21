@@ -43,6 +43,11 @@ class OBO:
             fields = line.rstrip().split()
 
             if len(fields) < 1:
+                # Blank line
+                continue
+            elif len(fields) < 2 and not fields[0].startswith('['):
+                # All other lines should be key:value pairs
+                logger.debug('Skipping unrecognized line: %s', line)
                 continue
 
             # Load the meta data commonly included at the
