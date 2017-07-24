@@ -617,6 +617,9 @@ class GOTerm:
         # Alternative IDs, likely to be obsolete
         self.alt_id = []
 
+        # Namespace of the term
+        self.namespace = None
+
         # Term description
         self.desc = None
 
