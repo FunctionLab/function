@@ -136,7 +136,8 @@ class NetworkSVM:
 
         return self._predictions
 
-    def print_predictions(self, ofile, pos_genes, neg_genes):
+    def print_predictions(self, ofile, pos_genes, neg_genes,
+            term_id, flat=False):
         with open(ofile, 'w') as outfile:
             for (g, s, p) in self._predictions:
                 if g in pos_genes:
@@ -145,6 +146,9 @@ class NetworkSVM:
                     label = '-1'
                 else:
                     label = '0'
-                line = [g, label, str(s), str(p), '\n']
+                if flat:
+                    line = [g, term_id, str(p), label, '\n']
+                else:
+                    line = [g, label, str(s), str(p), '\n']
                 outfile.write('\t'.join(line))
             outfile.close()

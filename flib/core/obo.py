@@ -284,10 +284,10 @@ class OBO:
                 gmt.add_gene(term.go_id, annotation.gid)
         return gmt
 
-    def map_genes(self, id_name):
+    def map_genes(self, id_name, xdb_prefixed=False):
         """Map gene names using the idmap object id_name"""
         for go_term in self.go_terms.itervalues():
-            go_term.map_genes(id_name)
+            go_term.map_genes(id_name, xdb_prefixed=xdb_prefixed)
 
     def populate_annotations(self, annotation_file, remote_location=False, xdb_col=0,
                              gene_col=1, term_col=4, ref_col=5, ev_col=6, date_col=13):
@@ -658,11 +658,15 @@ class GOTerm:
     def get_id(self):
         return self.go_id
 
-    def map_genes(self, id_name):
+    def map_genes(self, id_name, xdb_prefixed=False):
         """Map gene ids"""
         mapped_annotations_set = set([])
         for annotation in self.annotations:
-            mapped_genes = id_name.get(annotation.gid)
+            if xdb_prefixed:
+                mapped_genes = id_name.get(annotation.xdb + ':' + annotation.gid)
+            else:
+                mapped_genes = id_name.get(annotation.gid)
+
             if mapped_genes is None and 'CELE_' in annotation.gid:
                 mapped_genes = id_name.get(
                     annotation.gid[5:len(annotation.gid)])
@@ -670,6 +674,7 @@ class GOTerm:
             if mapped_genes is None:
                 logger.warning('No matching gene id: %s', annotation.gid)
                 continue
+
             for mgene in mapped_genes:
                 mapped_annotations_set.add(Annotation(xdb=None, gid=mgene,
                                                       direct=annotation.direct,

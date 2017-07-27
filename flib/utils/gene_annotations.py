@@ -55,6 +55,13 @@ parser.add_argument(
     help="If given outputs all go term/gene annotation pairs to this file, file is created in the output prefix directory.",
     metavar="string")
 parser.add_argument(
+    "-M",
+    "--output-gmt",
+    dest="out_gmt",
+    default=False,
+    action="store_true",
+    help="If given output will be in GMT file format.")
+parser.add_argument(
     "-i",
     "--id-file",
     dest="idfile",
@@ -159,13 +166,19 @@ if args.terms:
     f.close()
 
 if args.ofile:
-    gene_ontology.print_to_single_file(
-        args.opref +
-        '/' +
-        args.ofile,
-        gterms,
-        args.nspace,
-        args.assoc_format)
+    if args.out_gmt:
+        gene_ontology.print_to_gmt_file(
+            args.opref +
+            '/' +
+            args.ofile)
+    else:
+        gene_ontology.print_to_single_file(
+            args.opref +
+            '/' +
+            args.ofile,
+            gterms,
+            args.nspace,
+            args.assoc_format)
 else:
     gene_ontology.print_to_dir(args.opref,
                                gterms,

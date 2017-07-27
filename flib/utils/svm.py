@@ -42,6 +42,12 @@ parser.add_argument('--ontology', '-y', dest='ontology',
                     default='DO',
                     nargs=1,
                     help='Ontology to use for propagation')
+
+parser.add_argument('--flat-output', '-f', dest='flat',
+                    action='store_true',
+                    default=False,
+                    help='Flatten output')
+
 args = parser.parse_args()
 
 MIN_POS, MAX_POS = 5, 500
@@ -93,8 +99,14 @@ def run_svm(term):
     predictions = svm.predict(pos, neg,
                               predict_all=args.predict_all,
                               best_params=args.best_params)
-    svm.print_predictions(args.output + '/' + term, pos, neg)
+    svm.print_predictions(args.output + '/' + term,
+            pos, neg, term, flat=args.flat)
 
-pool = Pool(args.threads)
-pool.map(run_svm, terms)
-pool.close()
+if args.threads > 1:
+    pool = Pool(args.threads)
+    pool.map(run_svm, terms)
+    pool.close()
+else:
+    for term in terms:
+        run_svm(term)
+

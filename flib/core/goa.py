@@ -31,12 +31,6 @@ GO_PREFIX = ['goa_', 'gene_association.']
 GO_ASSOC_SUFFIX = ['.gaf.gz', '.gz']
 GO_INFO_SUFFIX = ['.gaf.json', '.json']
 
-GO_NAMESPACE_MAP = {
-    'biological_process': 'BP',
-    'molecular_function': 'MF',
-    'cellular_component': 'CC',
-}
-
 GO_ASSOC_URL = 'http://www.geneontology.org/gene-associations/'
 GO_VERSION_KEY = 'submissionDate'
 
@@ -44,7 +38,6 @@ class GOA:
     '''Gene ontology associations'''
     def __init__(self, org = 'Homo sapiens'):
         self._onto = None
-        self._data = None
         self._org = org
 
     def load_onto(self, onto=None, idmap=None):
@@ -70,24 +63,10 @@ class GOA:
         self._onto = onto
         return onto
 
-    def load_data(self):
-        annot_zip = GO_ASSOC_URL + ''.join((prefix, GO_NAMES[self._org], suffix))
-        ret = requests.head(annot_zip)
-        if ret.status_code < 400:
-            logger.info('Loading: %s', annot_zip)
-            gene_ontology.populate_annotations(
-                annot_zip,
-                remote_location=True)
-
-        return True
-
 if __name__ == '__main__':
     entrez_map = Entrez()
     entrez_map.load()
 
-    #gwas = GWASCatalog()
-    #onto = gwas.load_onto(idmap=entrez_map.get_symbol_map())
-    #onto.print_to_gmt_file('test.txt')
     goa = GOA()
     onto = goa.load_onto(idmap=entrez_map.get_xref_map())
     onto.print_to_gmt_file('go.gmt')
