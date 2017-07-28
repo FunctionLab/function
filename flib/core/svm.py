@@ -30,11 +30,15 @@ class NetworkSVM:
             'class_weight':['balanced', None]},
     ]
 
-    def __init__(self, dab):
+    def __init__(self, dab, preload=False):
         self._dab = dab
+        self._X_all = None
+
+        if preload:
+            self._dab_matrix()
 
     def _dab_matrix(self):
-        if not self._X_all:
+        if self._X_all is None:
             # Load dab as matrix
             self._X_all = np.empty(
                 [self._dab.get_size(), self._dab.get_size()])
@@ -94,7 +98,7 @@ class NetworkSVM:
 
             logger.info('Predicting SVM')
             if predict_all:
-                scores_cv = clf.decision_function(X_all)
+                scores_cv = clf.decision_function(self._dab_matrix())
                 scores = scores_cv if scores is None else np.column_stack(
                     (scores, scores_cv))
 
@@ -105,31 +109,29 @@ class NetworkSVM:
                 for i, idx in enumerate(test):
                     train_scores[idx] = scores_cv[i]
 
+
+        if predict_all:
+            scores = np.median(scores, axis=1)
+            # Replace training label scores with their held-out score
+            for i, idx in enumerate(train_genes_idx):
+                scores[idx] = train_scores[i]
+
+            genes = self._dab.gene_list
+        else:
+            scores = train_scores
+            genes = train_genes
+
         if prob_fit == 'ISO':
             ir = IsotonicRegression(out_of_bounds='clip')
             Y = label_binarize(y, [-1, 1])
             ir.fit(train_scores, Y[:, 0])
-            train_probs = ir.predict(train_scores)
+            probs = ir.predict(scores)
         else:
             Y = label_binarize(y, [-1, 1])
             sc = _SigmoidCalibration()
             sc.fit(train_scores, Y)
-            train_probs = sc.predict(train_scores)
+            probs = sc.predict(scores)
 
-        if predict_all:
-            scores = np.median(scores, axis=1)
-            for i, idx in enumerate(train_genes_idx):
-                scores[idx] = train_scores[i]
-
-            probs = np.median(probs, axis=1)
-            for i, idx in enumerate(train_genes_idx):
-                probs[idx] = train_probs[i]
-
-            genes = dab.gene_list
-        else:
-            scores = train_scores
-            genes = train_genes
-            probs = train_probs
 
         self._predictions = sorted(
             zip(genes, scores, probs), key=itemgetter(1), reverse=True)
