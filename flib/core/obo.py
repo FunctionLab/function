@@ -295,14 +295,16 @@ class OBO:
         logger.info('Populate gene annotations: %s', annotation_file)
 
         if remote_location:
-            ass_file_zip = urllib2.urlopen(annotation_file, timeout=5)
-            if annotation_file.endswith('.gz'):
-                ass_file = gzip.GzipFile(fileobj=io.BytesIO(ass_file_zip.read()))
-                ass_file_zip.close()
+            ass_file = urllib2.urlopen(annotation_file, timeout=5)
+            if ass_file.info().get('Content-Encoding') == 'gzip' or \
+                    ass_file.info().get('Content-Type').endswith('application/x-gzip'):
+                ass_file = gzip.GzipFile(fileobj=io.BytesIO(ass_file.read()))
             lines = ass_file.readlines()
+            ass_file.close()
         else:
             ass_file = open(association_file, 'r')
             lines = ass_file.readlines()
+            ass_file.close()
 
         details_col = 3
         for line in lines:
@@ -393,7 +395,7 @@ class OBO:
         for child_term in term.parent_of:
             if child_term.namespace != term.namespace:
                 logger.info("Parent and child terms are different namespaces: %s and %s",
-                        parent_term, term)
+                        child_term, term)
                 continue
             child_terms.add(child_term.go_id)
             child_terms = child_terms | self.get_descendents(child_term.go_id)
