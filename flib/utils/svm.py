@@ -88,7 +88,7 @@ else:
     exit()
 
 dab = Dab(args.input)
-svm = NetworkSVM(dab)
+svm = NetworkSVM(dab, preload=True)
 
 
 def run_svm(term):

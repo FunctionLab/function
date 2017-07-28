@@ -45,13 +45,17 @@ class OntoLabels:
         if not term:
             return (set(), set())
 
+        # Positive genes are annotated to the term
         pos = set(term.get_annotated_genes())
+
         unknown, all_genes = set(), set()
         term_tree = self._obo.get_ancestors(term_id)
 
         for obo_term in self._obo.get_termobject_list():
             obo_term_tree = self._obo.get_ancestors(obo_term.go_id)
             genes = set(obo_term.get_annotated_genes())
+
+            # Terms share a slim in their ancestor tree
             if len(set(self._slim_terms & term_tree & obo_term_tree)):
                 unknown |= genes
             all_genes |= genes
