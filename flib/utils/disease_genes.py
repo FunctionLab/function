@@ -29,7 +29,6 @@ entrez_map.load()
 
 
 if 'GO' in dbs:
-    onto = GeneOntology.generate()
     goa = GOA()
     onto = goa.load_onto(idmap=entrez_map.get_xref_map())
 

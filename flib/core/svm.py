@@ -149,7 +149,7 @@ class NetworkSVM:
                 else:
                     label = '0'
                 if flat:
-                    line = [g, term_id, str(p), label, '\n']
+                    line = [g, term_id, str(p), str(s), label, '\n']
                 else:
                     line = [g, label, str(s), str(p), '\n']
                 outfile.write('\t'.join(line))

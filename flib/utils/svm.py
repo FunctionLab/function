@@ -42,7 +42,6 @@ parser.add_argument('--ontology', '-y', dest='ontology',
                     default='DO',
                     nargs=1,
                     help='Ontology to use for propagation')
-
 parser.add_argument('--flat-output', '-f', dest='flat',
                     action='store_true',
                     default=False,
@@ -88,7 +87,7 @@ else:
     exit()
 
 dab = Dab(args.input)
-svm = NetworkSVM(dab, preload=True)
+svm = NetworkSVM(dab, preload=args.predict_all)
 
 
 def run_svm(term):
