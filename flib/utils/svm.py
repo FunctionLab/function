@@ -40,7 +40,6 @@ parser.add_argument('--best-params', '-b', dest='best_params', action='store_tru
 parser.add_argument('--ontology', '-y', dest='ontology',
                     choices=['GO', 'DO'],
                     default='DO',
-                    nargs=1,
                     help='Ontology to use for propagation')
 parser.add_argument('--flat-output', '-f', dest='flat',
                     action='store_true',
@@ -52,10 +51,13 @@ args = parser.parse_args()
 MIN_POS, MAX_POS = 5, 500
 
 if args.ontology == 'DO':
+    logger.info('Loading Disease Ontology')
     onto = DiseaseOntology.generate()
 elif args.ontology == 'GO':
+    logger.info('Loading Gene Ontology')
     onto = GeneOntology.generate()
 else:
+    logger.error('Unspecified ontology: %s', args.ontology)
     onto = Ontology.generate()
 
 if args.gmt:
@@ -67,6 +69,8 @@ if args.gmt:
     # Filter terms by number of gene annotations
     terms = [term.go_id for term in onto.get_termobject_list()
              if len(term.annotations) >= MIN_POS and len(term.annotations) <= MAX_POS]
+
+    logger.info('Total terms: %i', len(terms))
 
     if args.slim:
         # Build ontology aware labels
