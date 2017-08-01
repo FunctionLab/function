@@ -48,7 +48,7 @@ parser.add_argument('--flat-output', '-f', dest='flat',
 
 args = parser.parse_args()
 
-MIN_POS, MAX_POS = 5, 500
+MIN_POS, MAX_POS = 5, 300
 
 if args.ontology == 'DO':
     logger.info('Loading Disease Ontology')

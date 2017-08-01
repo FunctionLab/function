@@ -13,6 +13,9 @@ parser.add_argument('--output', '-o', dest='output', type=str,
 parser.add_argument('--propagate', '-p', dest='propagate', action='store_true',
                     default=False,
                     help='propagate annotations')
+parser.add_argument('--namespace', '-n', dest='namespace',
+                    default=None,
+                    help='term namespace')
 parser.add_argument('--databases', '-d', dest='databases',
                     choices=['HGMD', 'OMIM', 'GWASCAT', 'GO'],
                     default=['GO'],
@@ -50,4 +53,4 @@ else:
 if args.propagate:
     onto.propagate()
 
-onto.print_to_gmt_file(args.output)
+onto.print_to_gmt_file(args.output, p_namespace=args.namespace)
