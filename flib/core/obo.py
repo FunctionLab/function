@@ -10,10 +10,6 @@ from idmap import IDMap
 from gmt import GMT
 from io import URLResource
 
-import urllib2
-import gzip
-import io
-
 
 class OBO:
 
@@ -33,7 +29,7 @@ class OBO:
     def load_obo(self, obo_file, remote_location=False, timeout=5):
 
         if remote_location:
-            obo = URLResource(obo_file).get_file() #urllib2.urlopen(obo_file, timeout=timeout)
+            obo = URLResource(obo_file).get_file()
             lines = obo.readlines()
         else:
             obo = open(obo_file, 'r')
@@ -297,11 +293,6 @@ class OBO:
         logger.info('Populate gene annotations: %s', annotation_file)
 
         if remote_location:
-            #ass_file = urllib2.urlopen(annotation_file, timeout=5)
-            #if ass_file.info().get('Content-Encoding') == 'gzip' or \
-            #        ass_file.info().get('Content-Type').endswith('application/x-gzip'):
-            #    ass_file = gzip.GzipFile(fileobj=io.BytesIO(ass_file.read()))
-            #lines = ass_file.readlines()
             ass_file = URLResource(annotation_file).get_file()
             lines = ass_file.readlines()
         else:

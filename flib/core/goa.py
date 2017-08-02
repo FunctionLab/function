@@ -4,8 +4,6 @@ from collections import defaultdict
 import re
 import requests
 import urllib2
-import gzip
-import io
 
 from onto import GeneOntology
 from entrez import Entrez
