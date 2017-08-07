@@ -18,7 +18,7 @@ class TestLabels(unittest.TestCase):
 
         self.dsrepair_term = self.go.get_term(DSREPAIR_ID)
 
-        lines = open('files/go_slim.txt').readlines()
+        lines = open('files/go_neg_slim.txt').readlines()
         self.slim_terms = set([l.strip() for l in lines])
 
     def testOntoLabelsNeg(self):
