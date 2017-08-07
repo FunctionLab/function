@@ -287,6 +287,11 @@ class OBO:
         for go_term in self.go_terms.itervalues():
             go_term.map_genes(id_name, xdb_prefixed=xdb_prefixed)
 
+    def filter_annotations(self, evidence_codes):
+        """Filter out gene annotations by their annotation evidence"""
+        for go_term in self.go_terms.itervalues():
+            go_term.filter_annotations(evidence_codes)
+
     def populate_annotations(self, annotation_file, remote_location=False, xdb_col=0,
                              gene_col=1, term_col=4, ref_col=5, ev_col=6, date_col=13):
         """Populate the ontology with gene annotations from an association file"""
@@ -679,6 +684,12 @@ class GOTerm:
                                                       date=annotation.date,
                                                       cross_annotated=annotation.cross_annotated))
         self.annotations = mapped_annotations_set
+
+    def filter_annotations(self, evidence_codes):
+        """Filter gene annotations by their evidence code"""
+        for annotation in list(self.annotations):
+            if annotation.evidence not in evidence_codes:
+                self.remove_annotation(annotation)
 
     def get_annotated_genes(self, include_cross_annotated=True):
         genes = []

@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import sys
 import logging
 
@@ -5,7 +6,7 @@ import urllib2
 import gzip
 import io
 from collections import defaultdict
-from idmap import IDMap
+from flib.core.idmap import IDMap
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
