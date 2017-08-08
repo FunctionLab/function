@@ -32,7 +32,7 @@ if options.neg_genes:
     neg_genes = set()
     with open(options.neg_genes) as f:
         for g in f.readlines():
-            neg_genes.add(g)
+            neg_genes.add(g.strip())
 
 files = os.listdir(options.dir)
 files.sort()
@@ -46,9 +46,10 @@ for f in files:
         if label != '0' or neg_genes is not None:
             if label == '1':
                 labels.append(True)
+                scores.append(float(score))
             elif label == '-1' or (neg_genes and gene in neg_genes):
                 labels.append(False)
-            scores.append(float(score))
+                scores.append(float(score))
 
     labels, scores, probs = np.array(labels), np.array(scores), np.array(probs)
 
