@@ -2,6 +2,8 @@
 
 [ ![Codeship Status for FunctionLab/function](https://app.codeship.com/projects/793cc3c0-47e5-0135-b732-66f05eb232be/status?branch=master)](https://app.codeship.com/projects/231720)
 
+[![Code Climate](https://codeclimate.com/github/FunctionLab/function/badges/gpa.svg)](https://codeclimate.com/github/FunctionLab/function) [![Test Coverage](https://codeclimate.com/github/FunctionLab/function/badges/coverage.svg)](https://codeclimate.com/github/FunctionLab/function/coverage)
+
 flib is short for Functionlab Library. These are a set of assorted scripts and python classes that have been useful. These are provided without support in case someone else finds them useful.
 
 See the [wiki](https://github.com/FunctionLab/function/wiki) for code recipes!
