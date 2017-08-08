@@ -5,11 +5,12 @@ from onto import DiseaseOntology
 from entrez import Entrez
 import logging
 
+from flib.settings import HGMD_EVIDENCE
+
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
-EVIDENCE = frozenset(['DM', 'DFP'])
-
+HGMD_DEFAULT_EVIDENCE = frozenset(['DM', 'DFP'])
 
 class HGMD:
 
@@ -50,7 +51,7 @@ class HGMD:
 
         return True
 
-    def load_onto(self, onto=None, evidence=EVIDENCE, idmap=None):
+    def load_onto(self, onto=None, evidence=HGMD_DEFAULT_EVIDENCE, idmap=None):
         if not self._data:
             self.load_data()
 

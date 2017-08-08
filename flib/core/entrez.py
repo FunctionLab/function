@@ -6,24 +6,13 @@ import urllib2
 import gzip
 import io
 from collections import defaultdict
+
 from flib.core.idmap import IDMap
+from flib.settings import GENEINFO_URLS, UNIPROT_URLS, UNIPROT_PREFIX
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-GENEINFO_URLS = {
-    'Homo sapiens':
-    'ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz'
-}
-
-UNIPROT_URLS = {
-    'Homo sapiens':
-    'ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/' + \
-        'knowledgebase/idmapping/by_organism/HUMAN_9606_idmapping.dat.gz'
-}
-
-UNIPROT_PREFIX = 'UniProtKB'
 
 ENTREZID, SYMBOL, XREFS = 1, 2, 5
 

@@ -8,29 +8,12 @@ import urllib2
 from onto import GeneOntology
 from entrez import Entrez
 from idmap import IDMap
+from flib.settings import GOA_NAMES, GOA_PREFIX, \
+        GOA_ASSOC_SUFFIX, GOA_INFO_SUFFIX, GOA_ASSOC_URL, GOA_VERSION_KEY
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-
-GO_NAMES = {
-    'Arabidopsis thaliana': 'tair',
-    'Homo sapiens': 'human',
-    'Mus musculus': 'mgi',
-    'Rattus norvegicus': 'rgd',
-    'Danio rerio': 'zfin',
-    'Drosophila melanogaster': 'fb',
-    'Saccharomyces cerevisiae': 'sgd',
-    'Caenorhabditis elegans': 'wb',
-    'Pseudomonas aeruginosa': 'pseudocap'
-}
-
-GO_PREFIX = ['goa_', 'gene_association.']
-GO_ASSOC_SUFFIX = ['.gaf.gz', '.gz']
-GO_INFO_SUFFIX = ['.gaf.json', '.json']
-
-GO_ASSOC_URL = 'http://www.geneontology.org/gene-associations/'
-GO_VERSION_KEY = 'submissionDate'
 
 class GOA:
     '''Gene ontology associations'''
@@ -43,9 +26,9 @@ class GOA:
         if not onto:
             onto = GeneOntology.generate()
 
-        for prefix, suffix in zip(GO_PREFIX, GO_ASSOC_SUFFIX):
-            annot_zip = GO_ASSOC_URL + \
-                ''.join((prefix, GO_NAMES[self._org], suffix))
+        for prefix, suffix in zip(GOA_PREFIX, GOA_ASSOC_SUFFIX):
+            annot_zip = GOA_ASSOC_URL + \
+                ''.join((prefix, GOA_NAMES[self._org], suffix))
             ret = requests.head(annot_zip)
             if ret.status_code < 400:
                 logger.info('Loading: %s', annot_zip)
@@ -56,9 +39,9 @@ class GOA:
             else:
                 logger.debug('URL not available: %s', annot_zip)
 
-        for prefix, suffix in zip(GO_PREFIX, GO_INFO_SUFFIX):
-            info = GO_ASSOC_URL + \
-                ''.join((prefix, GO_NAMES[self._org], suffix))
+        for prefix, suffix in zip(GOA_PREFIX, GOA_INFO_SUFFIX):
+            info = GOA_ASSOC_URL + \
+                ''.join((prefix, GOA_NAMES[self._org], suffix))
             ret = requests.head(info)
             if ret.status_code < 400:
                 logger.info('Loading: %s', info)

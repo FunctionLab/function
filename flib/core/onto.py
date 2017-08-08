@@ -1,11 +1,6 @@
 from obo import OBO
 
-DO_URL = 'https://raw.githubusercontent.com/DiseaseOntology/HumanDiseaseOntology/master/src/ontology/doid-non-classified.obo'
-DO_NAME = 'Disease Ontology'
-
-GO_URL = 'http://geneontology.org/ontology/go.obo'
-GO_NAME = 'Gene Ontology'
-
+from flib.settings import DO_URL, DO_NAME, GO_URL, GO_NAME
 
 class Ontology:
 

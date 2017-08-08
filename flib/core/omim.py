@@ -6,14 +6,9 @@ logger = logging.getLogger(__name__)
 import re
 import requests
 
+from flib.settings import OMIM_MIM2GENE, OMIM_GENEMAP, \
+    OMIM_LIMIT_TYPE, OMIM_LIMIT_PHENO, OMIM_LIMIT_STATUS
 from onto import DiseaseOntology
-
-MIM2GENE = 'http://omim.org/static/omim/data/mim2gene.txt'
-GENEMAP = 'http://data.omim.org/downloads/NA8NpTI7QLK_CpW0PqV5uw/genemap.txt'
-
-LIMIT_TYPE = set(['gene', 'gene/phenotype'])
-LIMIT_PHENO = '(3)'
-LIMIT_STATUS = ['C', 'P']
 
 # This should be standardized, but you never know
 # Most disorders that have omimphenotypes fit this expression
@@ -39,7 +34,7 @@ class OMIM:
     def load_data(self):
 
         mim_gene = {}
-        mim2gene_list = requests.get(MIM2GENE).text.splitlines()
+        mim2gene_list = requests.get(OMIM_MIM2GENE).text.splitlines()
 
         for line in mim2gene_list:  # Loop from Dima @ Princeton
             if line.startswith('#'):
@@ -49,14 +44,14 @@ class OMIM:
                 logger.error('Can\'t parse line: %s', line)
                 continue
             mim, gtype, gid = toks[:3]
-            if gtype in LIMIT_TYPE:
+            if gtype in OMIM_LIMIT_TYPE:
                 if mim in mim_gene:
                     logger.warning("MIM already exists: %s", mim)
                 if gid:
                     mim_gene[mim] = gid
 
         mimdiseases = {}
-        genemap_list = requests.get(GENEMAP).text.splitlines()
+        genemap_list = requests.get(OMIM_GENEMAP).text.splitlines()
         genemap_version = None
 
         # TODO: Add support for publications
@@ -71,7 +66,7 @@ class OMIM:
             mim_geneid = l_split[8].strip()
             disorders = l_split[11].strip()
 
-            if disorders != '' and status in LIMIT_STATUS and mim_geneid in mim_gene:
+            if disorders != '' and status in OMIM_LIMIT_STATUS and mim_geneid in mim_gene:
                 logger.debug('%s with status %s', disorders, status)
 
                 geneid = mim_gene[mim_geneid]
@@ -87,7 +82,7 @@ class OMIM:
                             info_split = mim_info.group(0).split(' ')
                             mim_disease_id = info_split[1].strip()
                             mim_phetype = info_split[2].strip()
-                            if mim_phetype == LIMIT_PHENO:
+                            if mim_phetype == OMIM_LIMIT_PHENO:
                                 # print 'Correct phenotype'
                                 if mim_disease_id not in mimdiseases:
                                     mimdiseases[mim_disease_id] = mim_disease()

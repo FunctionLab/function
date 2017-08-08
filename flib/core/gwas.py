@@ -7,14 +7,12 @@ import requests
 from onto import DiseaseOntology
 from entrez import Entrez
 from idmap import IDMap
-
+from flib.settings import GWAS_URL
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
-GWAS_URL = 'https://www.ebi.ac.uk/gwas/api/search/downloads/alternative'
 DISEASE, REPORTED_GENES, MAPPED_GENES, MAPPED_TRAIT, MAPPED_TRAIT_URI = 7, 13, 14, 34, 35
 COLS = [DISEASE, REPORTED_GENES, MAPPED_GENES, MAPPED_TRAIT, MAPPED_TRAIT_URI]
-
 
 class GWASCatalog:
 
