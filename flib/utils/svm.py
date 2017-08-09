@@ -26,8 +26,8 @@ parser.add_argument('--gmt', '-g', dest='gmt', type=str,
                     help='Input GMT (geneset) file')
 parser.add_argument('--dir', '-d', dest='dir', type=str,
                     help='Directory of labels')
-parser.add_argument('--all', '-a', dest='predict_all', action='store_true',
-                    default=False,
+parser.add_argument('--all', '-a', dest='predict_all', action='store_false',
+                    default=True,
                     help='Predict all genes')
 parser.add_argument('--slim', '-s', dest='slim', type=str,
                     help='File of slim terms')
@@ -41,6 +41,8 @@ parser.add_argument('--ontology', '-y', dest='ontology',
                     choices=['GO', 'DO'],
                     default='DO',
                     help='Ontology to use for propagation')
+parser.add_argument('--namespace', '-n', dest='namespace',
+                    help='Limit predictions to terms in the specified namespace')
 parser.add_argument('--flat-output', '-f', dest='flat',
                     action='store_true',
                     default=False,
@@ -50,30 +52,37 @@ args = parser.parse_args()
 
 MIN_POS, MAX_POS = 5, 300
 
+onto = None
 if args.ontology == 'DO':
     logger.info('Loading Disease Ontology')
     onto = DiseaseOntology.generate()
 elif args.ontology == 'GO':
     logger.info('Loading Gene Ontology')
     onto = GeneOntology.generate()
-else:
-    logger.error('Unspecified ontology: %s', args.ontology)
-    onto = Ontology.generate()
 
 if args.gmt:
     # Load GMT genes onto Disease Ontology and propagate
     gmt = GMT(filename=args.gmt)
-    onto.populate_annotations_from_gmt(gmt)
-    onto.propagate()
 
-    # Filter terms by number of gene annotations
-    terms = [term.go_id for term in onto.get_termobject_list()
-             if len(term.annotations) >= MIN_POS and len(term.annotations) <= MAX_POS]
+    # Filter terms by geneset size
+    terms = [termid for termid, genes in gmt.genesets.iteritems() \
+            if len(genes) >= MIN_POS and len(genes) <= MAX_POS]
+
+    # Filter terms by namespace
+    if args.namespace and onto:
+        for termid in terms[:]:
+            term = onto.get_term(termid)
+            if term and term.namespace != args.namespace:
+                terms.remove(termid)
+                logger.info('Ignoring term %s with namespace %s', \
+                        termid, term.namespace)
 
     logger.info('Total terms: %i', len(terms))
 
-    if args.slim:
+    if args.slim and onto:
         # Build ontology aware labels
+        onto.populate_annotations_from_gmt(gmt)
+
         lines = open(args.slim).readlines()
         slim_terms = set([l.strip() for l in lines])
         labels = OntoLabels(obo=onto, slim_terms=slim_terms)

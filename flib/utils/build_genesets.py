@@ -65,6 +65,7 @@ if args.evidence:
     onto.filter_annotations(args.evidence)
 
 if args.propagate:
+    logger.info('Propagating gene annotations')
     onto.propagate()
 
 onto.print_to_gmt_file(args.output, p_namespace=args.namespace)

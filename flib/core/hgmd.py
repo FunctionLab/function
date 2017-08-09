@@ -5,12 +5,10 @@ from onto import DiseaseOntology
 from entrez import Entrez
 import logging
 
-from flib.settings import HGMD_EVIDENCE
+from flib.settings import HGMD_DEFAULT_EVIDENCE
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-
-HGMD_DEFAULT_EVIDENCE = frozenset(['DM', 'DFP'])
 
 class HGMD:
 
