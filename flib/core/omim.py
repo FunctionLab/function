@@ -8,7 +8,7 @@ import requests
 
 from flib.settings import OMIM_MIM2GENE, OMIM_GENEMAP, \
     OMIM_LIMIT_TYPE, OMIM_LIMIT_PHENO, OMIM_LIMIT_STATUS
-from onto import DiseaseOntology
+from flib.core.onto import DiseaseOntology
 
 # This should be standardized, but you never know
 # Most disorders that have omimphenotypes fit this expression
@@ -30,6 +30,7 @@ class OMIM:
         self._key = key
         self._onto = None
         self._data = None
+        self._meta = {}
 
     def load_data(self):
 
@@ -59,6 +60,7 @@ class OMIM:
             if l.startswith('#'):
                 if l.startswith('# Generated:'):
                     genemap_version = l.split('# Generated:')[1].strip()
+                    self._meta['genemap_version'] = genemap_version
                 continue
 
             l_split = l.split('\t')
@@ -128,8 +130,12 @@ class OMIM:
         self._onto = onto
         return onto
 
+    def get_meta(self, key):
+        return self._meta.get(key)
+
 if __name__ == '__main__':
     omim = OMIM()
     onto = omim.load_onto()
 
-    onto.print_to_gmt_file('test.txt')
+    #onto.print_to_gmt_file('test.txt')
+    print omim._meta

@@ -2,13 +2,11 @@ from __future__ import absolute_import
 import sys
 import logging
 
-import urllib2
-import gzip
-import io
 from collections import defaultdict
 
 from flib.core.idmap import IDMap
 from flib.settings import GENEINFO_URLS, UNIPROT_URLS, UNIPROT_PREFIX
+from flib.core.url import URLResource
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -25,9 +23,7 @@ class Entrez:
 
     def load(self, organism='Homo sapiens'):
 
-        gene_zip_fh = urllib2.urlopen(
-            GENEINFO_URLS[organism], timeout=5)
-        geneinfo = gzip.GzipFile(fileobj=io.BytesIO(gene_zip_fh.read()))
+        geneinfo = URLResource(GENEINFO_URLS[organism]).get_file()
         gene_zip_fh.close()
 
         for line in geneinfo:
@@ -42,9 +38,7 @@ class Entrez:
                 self._entrez[entrezid].add(xref)
 
         # Add uniprot IDs
-        gene_zip_fh = urllib2.urlopen(
-            UNIPROT_URLS[organism], timeout=5)
-        uniprot = gzip.GzipFile(fileobj=io.BytesIO(gene_zip_fh.read()))
+        uniprot = URLResource(UNIPROT_URLS[organism]).get_file()
         gene_zip_fh.close()
 
         for line in uniprot:

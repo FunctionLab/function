@@ -8,7 +8,7 @@ import re
 from collections import defaultdict
 from idmap import IDMap
 from gmt import GMT
-from io import URLResource
+from url import URLResource
 
 
 class OBO:
