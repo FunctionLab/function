@@ -130,7 +130,7 @@ class OMIM:
         self._onto = onto
         return onto
 
-    def get_meta(self, key):
+    def get_meta_data(self, key):
         return self._meta.get(key)
 
 if __name__ == '__main__':
