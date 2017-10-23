@@ -7,7 +7,7 @@ import requests
 from onto import DiseaseOntology
 from entrez import Entrez
 from idmap import IDMap
-from flib.settings import GWAS_URL
+from flib import settings
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class GWASCatalog:
         return onto
 
     def load_data(self):
-        lines = requests.get(GWAS_URL).text.encode('utf-8').splitlines()
+        lines = requests.get(settings.GWAS_URL).text.encode('utf-8').splitlines()
 
         genesets = defaultdict(set)
         headers = []

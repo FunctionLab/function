@@ -1,6 +1,6 @@
 from obo import OBO
 
-from flib.settings import DO_URL, DO_NAME, GO_URL, GO_NAME
+from flib import settings
 
 class Ontology:
 
@@ -18,11 +18,11 @@ class DiseaseOntology():
 
     @staticmethod
     def generate():
-        return Ontology.generate(obo_url=DO_URL)
+        return Ontology.generate(obo_url=settings.DO_URL)
 
 
 class GeneOntology:
 
     @staticmethod
     def generate():
-        return Ontology.generate(obo_url=GO_URL)
+        return Ontology.generate(obo_url=settings.GO_URL)

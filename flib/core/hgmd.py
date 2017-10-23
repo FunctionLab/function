@@ -5,7 +5,7 @@ from onto import DiseaseOntology
 from entrez import Entrez
 import logging
 
-from flib.settings import HGMD_DEFAULT_EVIDENCE
+from flib import settings
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -49,7 +49,7 @@ class HGMD:
 
         return True
 
-    def load_onto(self, onto=None, evidence=HGMD_DEFAULT_EVIDENCE, idmap=None):
+    def load_onto(self, onto=None, evidence=settings.HGMD_DEFAULT_EVIDENCE, idmap=None):
         if not self._data:
             self.load_data()
 

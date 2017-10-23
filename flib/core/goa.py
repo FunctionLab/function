@@ -8,8 +8,7 @@ import urllib2
 from onto import GeneOntology
 from entrez import Entrez
 from idmap import IDMap
-from flib.settings import GOA_NAMES, GOA_PREFIX, \
-        GOA_ASSOC_SUFFIX, GOA_INFO_SUFFIX, GOA_ASSOC_URL, GOA_VERSION_KEY
+from flib import settings
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -26,9 +25,9 @@ class GOA:
         if not onto:
             onto = GeneOntology.generate()
 
-        for prefix, suffix in zip(GOA_PREFIX, GOA_ASSOC_SUFFIX):
-            annot_zip = GOA_ASSOC_URL + \
-                ''.join((prefix, GOA_NAMES[self._org], suffix))
+        for prefix, suffix in zip(settings.GOA_PREFIX, settings.GOA_ASSOC_SUFFIX):
+            annot_zip = settings.GOA_ASSOC_URL + \
+                ''.join((prefix, settings.GOA_NAMES[self._org], suffix))
             ret = requests.head(annot_zip)
             if ret.status_code < 400:
                 logger.info('Loading: %s', annot_zip)
@@ -39,9 +38,9 @@ class GOA:
             else:
                 logger.debug('URL not available: %s', annot_zip)
 
-        for prefix, suffix in zip(GOA_PREFIX, GOA_INFO_SUFFIX):
-            info = GOA_ASSOC_URL + \
-                ''.join((prefix, GOA_NAMES[self._org], suffix))
+        for prefix, suffix in zip(settings.GOA_PREFIX, settings.GOA_INFO_SUFFIX):
+            info = settings.GOA_ASSOC_URL + \
+                ''.join((prefix, settings.GOA_NAMES[self._org], suffix))
             ret = requests.head(info)
             if ret.status_code < 400:
                 logger.info('Loading: %s', info)
