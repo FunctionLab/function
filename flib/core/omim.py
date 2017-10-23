@@ -140,12 +140,4 @@ class OMIM:
 if __name__ == '__main__':
     omim = OMIM()
     onto = omim.load_onto()
-    print settings.DO_URL
-    print onto.get_term('DOID:5683').get_annotated_genes()
-    #for term in onto.get_termobject_list():
-    #    if '672' in term.get_annotated_genes():
-    #        print term
 
-
-    #onto.print_to_gmt_file('test.txt')
-    # print omim._meta
