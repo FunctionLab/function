@@ -6,8 +6,7 @@ logger = logging.getLogger(__name__)
 import re
 import requests
 
-from flib.settings import OMIM_MIM2GENE, OMIM_GENEMAP, \
-    OMIM_LIMIT_TYPE, OMIM_LIMIT_PHENO, OMIM_LIMIT_STATUS
+from flib import settings
 from flib.core.onto import DiseaseOntology
 
 # This should be standardized, but you never know
@@ -35,7 +34,7 @@ class OMIM:
     def load_data(self):
 
         mim_gene = {}
-        mim2gene_list = requests.get(OMIM_MIM2GENE).text.splitlines()
+        mim2gene_list = requests.get(settings.OMIM_MIM2GENE).text.splitlines()
 
         for line in mim2gene_list:  # Loop from Dima @ Princeton
             if line.startswith('#'):
@@ -45,14 +44,14 @@ class OMIM:
                 logger.error('Can\'t parse line: %s', line)
                 continue
             mim, gtype, gid = toks[:3]
-            if gtype in OMIM_LIMIT_TYPE:
+            if gtype in settings.OMIM_LIMIT_TYPE:
                 if mim in mim_gene:
                     logger.warning("MIM already exists: %s", mim)
                 if gid:
                     mim_gene[mim] = gid
 
         mimdiseases = {}
-        genemap_list = requests.get(OMIM_GENEMAP).text.splitlines()
+        genemap_list = requests.get(settings.OMIM_GENEMAP).text.splitlines()
         genemap_version = None
 
         # TODO: Add support for publications
@@ -68,7 +67,7 @@ class OMIM:
             mim_geneid = l_split[8].strip()
             disorders = l_split[11].strip()
 
-            if disorders != '' and status in OMIM_LIMIT_STATUS and mim_geneid in mim_gene:
+            if disorders != '' and status in settings.OMIM_LIMIT_STATUS and mim_geneid in mim_gene:
                 logger.debug('%s with status %s', disorders, status)
 
                 geneid = mim_gene[mim_geneid]
@@ -76,15 +75,20 @@ class OMIM:
 
                 disorders_list = disorders.split(';')
                 for d in disorders_list:
+
                     if '[' not in d and '?' not in d:
                         mim_info = re.search(FIND_MIMID, d)
                         if mim_info:
+
+
                             # print 'Has necessary info'
                             # TODO: Make sure to include ? and [
                             info_split = mim_info.group(0).split(' ')
                             mim_disease_id = info_split[1].strip()
                             mim_phetype = info_split[2].strip()
-                            if mim_phetype == OMIM_LIMIT_PHENO:
+
+
+                            if mim_phetype == settings.OMIM_LIMIT_PHENO:
                                 # print 'Correct phenotype'
                                 if mim_disease_id not in mimdiseases:
                                     mimdiseases[mim_disease_id] = mim_disease()
@@ -92,9 +96,9 @@ class OMIM:
                                         mim_disease_id].mimid = mim_disease_id
                                     mimdiseases[
                                         mim_disease_id].phe_mm = mim_phetype
-                                if '{' in d:
-                                    mimdiseases[
-                                        mim_disease_id].is_susceptibility = 1
+                                    if '{' in d:
+                                        mimdiseases[
+                                            mim_disease_id].is_susceptibility = 1
                                 if tuple_gid_status not in mimdiseases[
                                         mim_disease_id].genetuples:
                                     mimdiseases[mim_disease_id].genetuples.append(
@@ -136,6 +140,12 @@ class OMIM:
 if __name__ == '__main__':
     omim = OMIM()
     onto = omim.load_onto()
+    print settings.DO_URL
+    print onto.get_term('DOID:5683').get_annotated_genes()
+    #for term in onto.get_termobject_list():
+    #    if '672' in term.get_annotated_genes():
+    #        print term
+
 
     #onto.print_to_gmt_file('test.txt')
-    print omim._meta
+    # print omim._meta

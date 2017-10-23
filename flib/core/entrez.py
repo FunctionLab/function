@@ -5,7 +5,7 @@ import logging
 from collections import defaultdict
 
 from flib.core.idmap import IDMap
-from flib.settings import GENEINFO_URLS, UNIPROT_URLS, UNIPROT_PREFIX
+from flib import settings
 from flib.core.url import URLResource
 
 logging.basicConfig()
@@ -23,7 +23,7 @@ class Entrez:
 
     def load(self, organism='Homo sapiens'):
 
-        geneinfo = URLResource(GENEINFO_URLS[organism]).get_file()
+        geneinfo = URLResource(settings.GENEINFO_URLS[organism]).get_file()
         gene_zip_fh.close()
 
         for line in geneinfo:
@@ -38,14 +38,14 @@ class Entrez:
                 self._entrez[entrezid].add(xref)
 
         # Add uniprot IDs
-        uniprot = URLResource(UNIPROT_URLS[organism]).get_file()
+        uniprot = URLResource(settings.UNIPROT_URLS[organism]).get_file()
         gene_zip_fh.close()
 
         for line in uniprot:
             tok = line.strip().split('\t')
             if len(tok) == 3 and tok[1] == 'GeneID':
                 uniprotid, itype, entrezid = tok
-                uniprotid = UNIPROT_PREFIX + ':' + uniprotid
+                uniprotid = settings.UNIPROT_PREFIX + ':' + uniprotid
                 self._xrefs[uniprotid].add(entrezid)
                 self._entrez[entrezid].add(uniprotid)
 
