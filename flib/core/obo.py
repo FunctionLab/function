@@ -301,7 +301,7 @@ class OBO:
             ass_file = URLResource(annotation_file).get_file()
             lines = ass_file.readlines()
         else:
-            ass_file = open(association_file, 'r')
+            ass_file = open(annotation_file, 'r')
             lines = ass_file.readlines()
             ass_file.close()
 
