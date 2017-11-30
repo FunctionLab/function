@@ -24,7 +24,6 @@ class Entrez:
     def load(self, organism='Homo sapiens'):
 
         geneinfo = URLResource(settings.GENEINFO_URLS[organism]).get_file()
-        gene_zip_fh.close()
 
         for line in geneinfo:
             toks = line.strip().split('\t')
@@ -37,9 +36,10 @@ class Entrez:
                 self._xrefs[xref].add(entrezid)
                 self._entrez[entrezid].add(xref)
 
+        geneinfo.close()
+
         # Add uniprot IDs
         uniprot = URLResource(settings.UNIPROT_URLS[organism]).get_file()
-        gene_zip_fh.close()
 
         for line in uniprot:
             tok = line.strip().split('\t')
@@ -48,6 +48,8 @@ class Entrez:
                 uniprotid = settings.UNIPROT_PREFIX + ':' + uniprotid
                 self._xrefs[uniprotid].add(entrezid)
                 self._entrez[entrezid].add(uniprotid)
+
+        uniprot.close()
 
     def get(self, symbol=None, xref=None):
         if symbol and symbol in self._symbols:

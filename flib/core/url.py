@@ -16,7 +16,8 @@ class URLResource:
             req = urllib2.Request(self._url, headers={'User-Agent':'Browser'})
             url_file = urllib2.urlopen(req, timeout=10)
             if url_file.info().get('Content-Encoding') == 'gzip' or \
-                    url_file.info().get('Content-Type') == 'application/x-gzip':
+                    url_file.info().get('Content-Type') == 'application/x-gzip' or \
+                    self._url.endswith('.gz'):
                 url_file = gzip.GzipFile(fileobj=io.BytesIO(url_file.read()))
             self._file = url_file
 
