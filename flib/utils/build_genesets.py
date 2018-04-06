@@ -1,15 +1,16 @@
 import argparse
 import logging
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 from flib.core.entrez import Entrez
 from flib.core.hgmd import HGMD
 from flib.core.omim import OMIM
 from flib.core.gwas import GWASCatalog
 from flib.core.goa import GOA
-from flib.core.onto import DiseaseOntology, GeneOntology
+from flib.core.onto import DiseaseOntology
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser(
     description='Generate a file of updated disease gene annotations')
@@ -28,7 +29,7 @@ parser.add_argument('--databases', '-d', dest='databases',
                     help='list of databases')
 
 parser.add_argument('--evidence', '-e', dest='evidence',
-                    choices=['EXP','IDA','IPI','IMP','IGI','IEP'],
+                    choices=['EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP'],
                     default=None,
                     nargs='*',
                     help='list of evidence codes')

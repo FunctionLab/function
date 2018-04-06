@@ -1,28 +1,23 @@
-import sys
 import os
-import math
 import numpy as np
-import string
 from optparse import OptionParser
-from collections import defaultdict
 
 from sklearn.metrics import roc_auc_score, average_precision_score
 
 usage = "usage: %prog [options]"
 parser = OptionParser(usage, version="%prog dev-unreleased")
 parser.add_option("-d", "--dir", dest="dir",
-    help="svmperf directory", metavar="FILE")
+                  help="svmperf directory", metavar="FILE")
 parser.add_option("-g", "--neg-genes", dest="neg_genes",
-    help="gene list of negative examples", metavar="FILE")
+                  help="gene list of negative examples", metavar="FILE")
 parser.add_option("-l", "--label-col", dest="label_col",
-    default=1,
-    type=int,
-    help="column of the label (zero-indexed)")
+                  default=1,
+                  type=int,
+                  help="column of the label (zero-indexed)")
 parser.add_option("-s", "--score-col", dest="score_col",
-    default=2,
-    type=int,
-    help="column of the score (zero-indexed)")
-
+                  default=2,
+                  type=int,
+                  help="column of the score (zero-indexed)")
 
 
 (options, args) = parser.parse_args()
@@ -42,7 +37,8 @@ for f in files:
 
     for l in open(options.dir + '/' + f):
         tok = l.strip().split('\t')
-        gene, label, score = tok[0], tok[options.label_col], tok[options.score_col]
+        gene, label, score = tok[0], tok[options.label_col], \
+            tok[options.score_col]
         if label != '0' or neg_genes is not None:
             if label == '1':
                 labels.append(True)
@@ -53,5 +49,6 @@ for f in files:
 
     labels, scores, probs = np.array(labels), np.array(scores), np.array(probs)
 
-    print f, len([l for l in labels if l]), len([l for l in labels if not l]), \
+    print f, len([l for l in labels if l]), \
+        len([l for l in labels if not l]), \
         average_precision_score(labels, scores), roc_auc_score(labels, scores)
