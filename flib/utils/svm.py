@@ -1,18 +1,18 @@
 import argparse
 
 import logging
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 from multiprocessing import Pool
 
 from flib.core.dab import Dab
 from flib.core.gmt import GMT
-from flib.core.omim import OMIM
-from flib.core.onto import Ontology, DiseaseOntology, GeneOntology
+from flib.core.onto import DiseaseOntology, GeneOntology
 from flib.core.labels import OntoLabels, Labels
 from flib.core.svm import NetworkSVM
+
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 parser = argparse.ArgumentParser(
     description='Generate a file of updated disease gene annotations')
@@ -34,7 +34,8 @@ parser.add_argument('--slim', '-s', dest='slim', type=str,
 parser.add_argument('--threads', '-t', dest='threads', type=int,
                     default=12,
                     help='Number of threads')
-parser.add_argument('--best-params', '-b', dest='best_params', action='store_true',
+parser.add_argument('--best-params', '-b', dest='best_params',
+                    action='store_true',
                     default=False,
                     help='Select best parameters by cross validation')
 parser.add_argument('--ontology', '-y', dest='ontology',
@@ -42,7 +43,8 @@ parser.add_argument('--ontology', '-y', dest='ontology',
                     default='DO',
                     help='Ontology to use for propagation')
 parser.add_argument('--namespace', '-n', dest='namespace',
-                    help='Limit predictions to terms in the specified namespace')
+                    help='Limit predictions to terms in the \
+                    specified namespace')
 parser.add_argument('--flat-output', '-f', dest='flat',
                     action='store_true',
                     default=False,
@@ -65,8 +67,8 @@ if args.gmt:
     gmt = GMT(filename=args.gmt)
 
     # Filter terms by geneset size
-    terms = [termid for termid, genes in gmt.genesets.iteritems() \
-            if len(genes) >= MIN_POS and len(genes) <= MAX_POS]
+    terms = [termid for termid, genes in gmt.genesets.iteritems()
+             if len(genes) >= MIN_POS and len(genes) <= MAX_POS]
 
     # Filter terms by namespace
     if args.namespace and onto:
@@ -74,8 +76,8 @@ if args.gmt:
             term = onto.get_term(termid)
             if term and term.namespace != args.namespace:
                 terms.remove(termid)
-                logger.info('Ignoring term %s with namespace %s', \
-                        termid, term.namespace)
+                logger.info('Ignoring term %s with namespace %s',
+                            termid, term.namespace)
 
     logger.info('Total terms: %i', len(terms))
 
@@ -108,11 +110,12 @@ def run_svm(term):
 
     logger.info('Running SVM for %s, %i pos, %i neg', term, len(pos), len(neg))
 
-    predictions = svm.predict(pos, neg,
-                              predict_all=args.predict_all,
-                              best_params=args.best_params)
+    svm.predict(pos, neg,
+                predict_all=args.predict_all,
+                best_params=args.best_params)
     svm.print_predictions(args.output + '/' + term,
-            pos, neg, term, flat=args.flat)
+                          pos, neg, term, flat=args.flat)
+
 
 if args.threads > 1:
     pool = Pool(args.threads)
@@ -121,4 +124,3 @@ if args.threads > 1:
 else:
     for term in terms:
         run_svm(term)
-

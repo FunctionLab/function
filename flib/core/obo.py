@@ -1,14 +1,12 @@
-import sys
+import re
+from collections import defaultdict
+from gmt import GMT
+from url import URLResource
+
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
-
-import re
-from collections import defaultdict
-from idmap import IDMap
-from gmt import GMT
-from url import URLResource
 
 
 class OBO:

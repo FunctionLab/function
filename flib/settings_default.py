@@ -53,7 +53,7 @@ HGMD_DEFAULT_EVIDENCE = frozenset(['DM', 'DFP'])
 """
 OMIM - Online Mendelian Inheritance in Man
 """
-OMIM_KEY = 'NA8NpTI7QLK_CpW0PqV5uw'
+OMIM_KEY = 'DUBJEOOeQLWrZuLTgSmSyA'
 OMIM_MIM2GENE = 'http://omim.org/static/omim/data/mim2gene.txt'
 OMIM_GENEMAP = 'http://data.omim.org/downloads/' + OMIM_KEY + '/genemap.txt'
 

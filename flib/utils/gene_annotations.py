@@ -1,17 +1,20 @@
 import argparse
 import logging
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+import sys
 
-from optparse import OptionParser
+from collections import defaultdict
 
 from flib.core.obo import OBO
 from flib.core.gmt import GMT
 from flib.core.idmap import IDMap
 
+logging.basicConfig()
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 parser = argparse.ArgumentParser(
-    description='Generate propagated gene annotation lists from ontology and association files')
+    description='Generate propagated gene annotation lists from ontology and \
+    association files')
 parser.add_argument(
     "-o",
     "--obo-file",
@@ -35,7 +38,8 @@ parser.add_argument(
     "-g",
     dest="gcol",
     type=int,
-    help="The column of the annotations file containing the desired identifiers",
+    help="The column of the annotations file containing the desired \
+    identifiers",
     default=1)
 parser.add_argument(
     "-G",
@@ -52,7 +56,8 @@ parser.add_argument(
     "-f",
     "--output-filename",
     dest="ofile",
-    help="If given outputs all go term/gene annotation pairs to this file, file is created in the output prefix directory.",
+    help="If given outputs all go term/gene annotation pairs to this file, \
+    file is created in the output prefix directory.",
     metavar="string")
 parser.add_argument(
     "-M",
@@ -65,7 +70,8 @@ parser.add_argument(
     "-i",
     "--id-file",
     dest="idfile",
-    help="File to map existing gene ids to the desired identifiers in the format <gene id>\\t<desired id>\\n",
+    help="File to map existing gene ids to the desired identifiers in the \
+    format <gene id>\\t<desired id>\\n",
     metavar="FILE")
 parser.add_argument(
     "-p",
@@ -83,20 +89,23 @@ parser.add_argument(
     "-n",
     "--namespace",
     dest="nspace",
-    help="limit the GO term output to the input namespace: (biological_process, cellular_component, molecular_function)",
+    help="limit the GO term output to the input namespace: \
+    (biological_process, cellular_component, molecular_function)",
     metavar="STRING")
 parser.add_argument(
     "-A",
     dest="assoc_format",
     action="store_true",
     default=False,
-    help="If we are printing to a file (-f), pass this to get a full association file back.")
+    help="If we are printing to a file (-f), pass this to get a full \
+    association file back.")
 parser.add_argument(
     "-u",
     dest="pub_filter",
     action="store_true",
     default=False,
-    help="Filter annotations from high-throughput publications (>50 annotations)")
+    help="Filter annotations from high-throughput publications \
+    (>50 annotations)")
 parser.add_argument(
     "-r",
     dest="remote_file",

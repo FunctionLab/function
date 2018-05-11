@@ -1,13 +1,12 @@
-import sys
-import logging
-logging.basicConfig()
-logger = logging.getLogger(__name__)
-
 import re
 import requests
 
 from flib import settings
 from flib.core.onto import DiseaseOntology
+
+import logging
+logging.basicConfig()
+logger = logging.getLogger(__name__)
 
 # This should be standardized, but you never know
 # Most disorders that have omimphenotypes fit this expression
@@ -31,10 +30,28 @@ class OMIM:
         self._data = None
         self._meta = {}
 
-    def load_data(self):
+    def load_data(self, mim2gene=None, genemap=None):
 
         mim_gene = {}
-        mim2gene_list = requests.get(settings.OMIM_MIM2GENE).text.splitlines()
+        if mim2gene:
+            with open(mim2gene) as f:
+                try:
+                    mim2gene_list = f.readlines()
+                except IOError:
+                    return False
+        else:
+            mim2gene_list = requests.get(settings.OMIM_MIM2GENE) \
+                .text.splitlines()
+
+        if genemap:
+            with open(genemap) as f:
+                try:
+                    genemap_list = f.readlines()
+                except IOError:
+                    return False
+        else:
+            genemap_list = requests.get(settings.OMIM_GENEMAP) \
+                .text.splitlines()
 
         for line in mim2gene_list:  # Loop from Dima @ Princeton
             if line.startswith('#'):
@@ -51,8 +68,9 @@ class OMIM:
                     mim_gene[mim] = gid
 
         mimdiseases = {}
-        genemap_list = requests.get(settings.OMIM_GENEMAP).text.splitlines()
         genemap_version = None
+
+        print mim2gene_list[0], genemap_list[0]
 
         # TODO: Add support for publications
         for l in genemap_list:  # Loop from Dima @ Princeton
@@ -67,7 +85,8 @@ class OMIM:
             mim_geneid = l_split[8].strip()
             disorders = l_split[11].strip()
 
-            if disorders != '' and status in settings.OMIM_LIMIT_STATUS and mim_geneid in mim_gene:
+            if disorders != '' and status in settings.OMIM_LIMIT_STATUS \
+                    and mim_geneid in mim_gene:
                 logger.debug('%s with status %s', disorders, status)
 
                 geneid = mim_gene[mim_geneid]
@@ -80,13 +99,11 @@ class OMIM:
                         mim_info = re.search(FIND_MIMID, d)
                         if mim_info:
 
-
                             # print 'Has necessary info'
                             # TODO: Make sure to include ? and [
                             info_split = mim_info.group(0).split(' ')
                             mim_disease_id = info_split[1].strip()
                             mim_phetype = info_split[2].strip()
-
 
                             if mim_phetype == settings.OMIM_LIMIT_PHENO:
                                 # print 'Correct phenotype'
@@ -101,8 +118,8 @@ class OMIM:
                                             mim_disease_id].is_susceptibility = 1
                                 if tuple_gid_status not in mimdiseases[
                                         mim_disease_id].genetuples:
-                                    mimdiseases[mim_disease_id].genetuples.append(
-                                        tuple_gid_status)
+                                    mimdiseases[mim_disease_id].genetuples \
+                                        .append(tuple_gid_status)
 
         self._data = mimdiseases
         return True
@@ -137,7 +154,7 @@ class OMIM:
     def get_meta_data(self, key):
         return self._meta.get(key)
 
+
 if __name__ == '__main__':
     omim = OMIM()
     onto = omim.load_onto()
-
