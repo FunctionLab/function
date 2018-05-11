@@ -8,7 +8,7 @@ class Ontology:
     def generate(obo_file=None, obo_url=None):
         onto = OBO()
         if obo_file:
-            onto.load_obo(file=obo_file)
+            onto.load_obo(obo_file=obo_file)
         elif obo_url:
             onto.load_obo(obo_url, remote_location=True, timeout=15)
         return onto

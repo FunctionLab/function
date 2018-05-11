@@ -70,8 +70,6 @@ class OMIM:
         mimdiseases = {}
         genemap_version = None
 
-        print mim2gene_list[0], genemap_list[0]
-
         # TODO: Add support for publications
         for l in genemap_list:  # Loop from Dima @ Princeton
             if l.startswith('#'):
