@@ -1,22 +1,20 @@
-import sys
 import logging
-from collections import defaultdict
-import re
 import requests
 import urllib2
 
 from onto import GeneOntology
 from entrez import Entrez
-from idmap import IDMap
 from flib import settings
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
+
 class GOA:
     '''Gene ontology associations'''
-    def __init__(self, org = 'Homo sapiens'):
+
+    def __init__(self, org='Homo sapiens'):
         self._onto = None
         self._org = org
         self._meta = {}
@@ -59,6 +57,7 @@ class GOA:
 
     def get_meta_data(self, key):
         return self._meta.get(key)
+
 
 if __name__ == '__main__':
     entrez_map = Entrez()
