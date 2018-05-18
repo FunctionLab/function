@@ -229,7 +229,7 @@ class OBO:
             try:
                 term = self.go_terms[self.alt_id2std_id[tid]]
             except KeyError:
-                logger.error('Term name does not exist: %s', tid)
+                logger.warning('Term name does not exist: %s', tid)
         return term
 
     def get_meta_data(self, key):
