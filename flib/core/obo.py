@@ -7,35 +7,8 @@ from flib.core.url import URLResource
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.ERROR)
+logger.setLevel(logging.INFO)
 
-
-def go_term_id_comparison(go_term_x, go_term_y):
-    '''Compares two strings according to the current LC_COLLATE setting.
-    As any other compare function, returns a negative, or a positive value, or 0,
-    depending on whether string1 collates before or after string2 or is equal to it.
-    '''
-    return locale.strcoll(go_term_x.go_id, go_term_y.go_id)
-
-
-def cmp_to_key(mycmp):
-    'Convert a cmp= function into a key= function'
-    class K:
-        def __init__(self, obj, *args):
-            self.obj = obj
-        def __lt__(self, other):
-            return mycmp(self.obj, other.obj) < 0
-        def __gt__(self, other):
-            return mycmp(self.obj, other.obj) > 0
-        def __eq__(self, other):
-            return mycmp(self.obj, other.obj) == 0
-        def __le__(self, other):
-            return mycmp(self.obj, other.obj) <= 0
-        def __ge__(self, other):
-            return mycmp(self.obj, other.obj) >= 0
-        def __ne__(self, other):
-            return mycmp(self.obj, other.obj) != 0
-    return K
 
 class OBO:
 
@@ -268,7 +241,6 @@ class OBO:
 
     def get_termobject_list(self, terms=None, p_namespace=None):
         """Return list of all GOTerms"""
-        print("get_termobject_list")
         logger.info('get_termobject_list')
         if terms is None:
             terms = self.go_terms.keys()
@@ -300,7 +272,7 @@ class OBO:
     def as_gmt(self):
         """Return gene annotations as GMT object"""
         gmt = GMT()
-        tlist = sorted(self.get_termobject_list())
+        tlist = sorted(self.get_termobject_list(),key=cmp_to_key(go_term_id_comparison))
         for term in tlist:
             if len(term.annotations):
                 gmt.add_geneset(gsid=term.go_id, name=term.name)
@@ -478,7 +450,7 @@ class OBO:
         tlist = sorted(
             self.get_termobject_list(
                 terms=terms,
-                p_namespace=p_namespace))
+                p_namespace=p_namespace),key=cmp_to_key(go_term_id_comparison))
         f = open(out_file, 'w')
         for term in tlist:
             for annotation in term.annotations:
@@ -502,9 +474,13 @@ class OBO:
                                 # cross_annotation (e.g. bootstrap value,
                                 # p-value)
                                 str(annotation.ortho_evidence) if annotation.ortho_evidence else '', '', '']
-                    print >> f, '\t'.join([str(x) for x in to_print])
+                    #print >> f, '\t'.join([str(x) for x in to_print])
+                    line = '\t'.join([str(x) for x in to_print])+'\n'
+                    f.write(line)
                 else:
-                    print >> f, term.go_id + '\t' + term.name + '\t' + annotation.gid
+                    #print >> f, term.go_id + '\t' + term.name + '\t' + annotation.gid
+                    f.write(term.go_id + '\t' + term.name + '\t' + annotation.gid+'\n')
+
         f.close()
 
     def print_to_gmt_file(self, out_file, terms=None, p_namespace=None):
@@ -528,7 +504,7 @@ class OBO:
         tlist = sorted(
             self.get_termobject_list(
                 terms=terms,
-                p_namespace=p_namespace))
+                p_namespace=p_namespace),key=cmp_to_key(go_term_id_comparison))
         f = open(out_file, 'w')
 
         allgenes = set()
@@ -544,13 +520,17 @@ class OBO:
                 allgenes.add(annotation.gid)
                 genedict[annotation.gid].add(term.go_id)
 
-        print >> f, '\t' + '\t'.join(termlist)
+        #print >> f, '\t' + '\t'.join(termlist)
+        line = '\t' + '\t'.join(termlist) + '\n'
+        f.write(line)
+
         for g in list(allgenes):
             row = []
             row.append(g)
             for termid in termlist:
                 row.append('1' if termid in genedict[g] else '0')
-            print >> f, '\t'.join(row)
+                line = '\t'.join(row) + '\n'
+                f.write(line)
         f.close()
 
 
@@ -767,6 +747,36 @@ class GOTerm:
             return self.xrefs[dbid]
         else:
             return None
+
+
+
+def go_term_id_comparison(go_term_x, go_term_y):
+    '''Compares two strings according to the current LC_COLLATE setting.
+    As any other compare function, returns a negative, or a positive value, or 0,
+    depending on whether string1 collates before or after string2 or is equal to it.
+    '''
+    return locale.strcoll(go_term_x.go_id, go_term_y.go_id)
+
+
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
+
 
 
 if __name__ == '__main__':

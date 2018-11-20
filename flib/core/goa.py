@@ -1,6 +1,4 @@
 import logging
-import requests
-#import urllib2
 
 from flib.core.onto import GeneOntology
 from flib.core.url import URLResource
@@ -10,7 +8,7 @@ from flib import settings
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+logger.setLevel(logging.WARN)
 
 
 class GOA:
@@ -58,5 +56,7 @@ if __name__ == '__main__':
 
     goa = GOA()
     onto = goa.load_onto()
-    print(onto)
     onto.print_to_gmt_file('go.gmt')
+    #onto.print_to_dir('test')
+    #onto.print_to_single_file('go.single')
+    #onto.print_to_mat_file('go.mat')
