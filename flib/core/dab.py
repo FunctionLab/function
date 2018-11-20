@@ -129,7 +129,7 @@ class Dab(object):
             dab_file.seek(start)
             self.dat = array.array('f')
             self.dat.fromfile(dab_file, total)
-
+        dab_file.close()
         assert len(self.dat) == total
 
     def get_size(self):
@@ -249,13 +249,15 @@ if __name__ == '__main__':
     if args.dab is None:
         sys.stderr.write("--dab file is required.\n")
         sys.exit()
-    pcl_out = args.out.endswith('.pcl')
-    dat_out = args.out.endswith('.dat')
-    if args.out is not None and not pcl_out and not dat_out:
-        sys.stderr.write("Unknown file format for: " + args.out + "\n")
-        sys.exit()
 
-    dab = dat(args.dab)
+    if args.out is not None:
+        pcl_out = args.out.endswith('.pcl')
+        dat_out = args.out.endswith('.dat')
+        if not pcl_out and not dat_out:
+            sys.stderr.write("Unknown file format for: " + args.out + "\n")
+            sys.exit()
+
+    dab = Dab(args.dab)
 
     if args.out is None:
         dab.print_table()

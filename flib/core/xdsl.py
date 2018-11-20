@@ -8,30 +8,33 @@ from xml.etree import ElementTree
 import sys
 import numpy
 
+
 def isodd(num):
     return num & 1 and True or False
+
 
 class CptNodesHolder:
     '''
     Parses xdsl file and holds all the nodes as dictionary
     '''
+
     def __init__(self, filename=None):
-        #dictionary of CptNode objects
+        # dictionary of CptNode objects
         self.nodes = {}
         if filename:
-            self.parse(filename)        
-        
+            self.parse(filename)
+
     def __str__(self):
         return self.nodes
-    
+
     def __repr__(self):
         return self.__str__()
-    
-    def parse(self,filename):
+
+    def parse(self, filename):
         '''Parses the file and fills out the dictionary nodes'''
         try:
             tree = ElementTree.parse(filename)
-            #smile entry
+            # smile entry
             root = tree.getroot()
             for entry in root:
                 if entry.tag == 'nodes':
@@ -40,75 +43,75 @@ class CptNodesHolder:
                             node_id = elem.attrib['id']
                             node = CptNode(node_id=node_id)
                             for child in elem:
-                                #add states
+                                # add states
                                 if child.tag == 'state' and 'id' in child.attrib:
                                     node.states.append(child.attrib['id'])
-                                #add parents
+                                # add parents
                                 elif child.tag == 'parents':
                                     node.parents.append(child.text)
-                                elif child.tag == 'probabilities':                                    
+                                elif child.tag == 'probabilities':
                                     vals = self._parse_probabilities(child.text)
                                     node.neg_probabilities = vals[0]
                                     node.pos_probabilities = vals[1]
                             self.nodes[node_id] = node
                             del node
         except IOError:
-            print 'Can\'t open the file: %s.\nPlease check if file exists and if it has right permission.'  % filename
-                  
-    def _parse_probabilities(self,prob_str):
+            print('Can\'t open the file: %s.\nPlease check if file exists and if it has right permission.' % filename)
+
+    def _parse_probabilities(self, prob_str):
         '''
         Splits the prob_str values into 2 lists of float values
         '''
-        def_vals = [None,None]
-        if prob_str == None or len(prob_str.strip())==0:
+        def_vals = [None, None]
+        if prob_str == None or len(prob_str.strip()) == 0:
             return def_vals
         vals = prob_str.split()
         strlen = len(vals)
         if isodd(strlen):
-            print 'Incorrect # of probabilities for this str: %s' % prob_str 
+            print ('Incorrect # of probabilities for this str: %s' % prob_str)
             return def_vals
-        #Convert to float
+        # Convert to float
         float_vals = [float(s) for s in vals]
-        return [float_vals[0:strlen/2],float_vals[strlen/2:]]
-            
-    def get_node(self,node_id):
+        return [float_vals[0:strlen / 2], float_vals[strlen / 2:]]
+
+    def get_node(self, node_id):
         ''' Returns CptNode obj '''
         if node_id in self.nodes:
             return self.nodes[node_id]
 
-    def get_probabilities(self,node_id):
-        ''' Returns list of probabilities for given node_id  '''        
+    def get_probabilities(self, node_id):
+        ''' Returns list of probabilities for given node_id  '''
         if node_id in self.nodes:
-            return self.nodes[node_id].get_probabilities() 
-    
+            return self.nodes[node_id].get_probabilities()
+
     def get_nodes_ids(self):
-        ''' Returns all nodes ids in the current holder '''        
+        ''' Returns all nodes ids in the current holder '''
         return self.nodes.keys()
-    
-    
-    
+
+
 class CptNode:
     '''
     Single node with states and probabilities
     '''
-    def __init__(self,node_id=None):
+
+    def __init__(self, node_id=None):
         self.node_id = node_id
         self.parents = []
-        #list of state ids
+        # list of state ids
         self.states = []
         self.pos_probabilities = []
         self.neg_probabilities = []
 
     def __str__(self):
-        string = '%s, states:%s, pos:%s, neg:%s' % (self.node_id, self.states, self.pos_probabilities, self.neg_probabilities)
-        return string          
+        string = '%s, states:%s, pos:%s, neg:%s' % (
+        self.node_id, self.states, self.pos_probabilities, self.neg_probabilities)
+        return string
 
-        
     def __repr__(self):
-        return self.__str__()          
+        return self.__str__()
 
     def get_probabilities(self):
-        return [self.neg_probabilities,self.pos_probabilities]
+        return [self.neg_probabilities, self.pos_probabilities]
 
     def get_logratios(self):
         bineffects = []
@@ -116,7 +119,7 @@ class CptNode:
             if ppos == 0 or pneg == 0:
                 bineffects.append(0)
             else:
-                bineffects.append(numpy.log(pneg/ppos))
+                bineffects.append(numpy.log(pneg / ppos))
 
         return bineffects
 
@@ -133,18 +136,18 @@ if __name__ == '__main__':
 
     if options.xdsl is None:
         sys.stderr.write("--xdsl file is required.\n")
-        sys.exit()   
-        
-    filename = options.xdsl     
+        sys.exit()
+
+    filename = options.xdsl
     nodes = CptNodesHolder(filename=filename)
-    
+
     if options.out:
         out_file = open(options.out, 'w')
         # such bad code...
         dsets = nodes.get_nodes_ids()
-        for i in xrange(-1,7):
+        for i in xrange(-1, 7):
             for dataset in dsets:
-                if i==-1:
+                if i == -1:
                     out_file.write(dataset + '_neg' + '\t')
                     out_file.write(dataset + '_pos' + '\t')
                 else:
@@ -168,5 +171,7 @@ if __name__ == '__main__':
             llsum += (befs[i])
 
         if max(befs) > 0:
-            print s, llsum, [x for x in befs if x > 0]
-
+            #print s, llsum, [x for x in befs if x > 0]
+            print(s)
+            print(llsum)
+            print([x for x in befs if x > 0])

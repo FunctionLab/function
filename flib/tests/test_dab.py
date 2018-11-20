@@ -10,16 +10,20 @@ class TestDab(unittest.TestCase):
         self.dab_file = 'files/test_data/test_dab.dab'
         self.dab = Dab(self.dab_file)
 
-        self.dat_file = 'files/test_data/test_dat.dat'
-        self.dat = open(self.dat_file).readlines()
+        self.dat_filename = 'files/test_data/test_dat.dat'
+        self.dat_file = open(self.dat_filename)
+        self.dat = self.dat_file.readlines()
 
         self.qdab_file = 'files/test_data/test_qdab.qdab'
         self.qdab = Dab(self.qdab_file)
 
-        self.qdab_dat_file = 'files/test_data/test_qdab.dat'
-        self.qdab_dat = open(self.qdab_dat_file).readlines()
+        self.qdab_dat_filename = 'files/test_data/test_qdab.dat'
+        self.qdab_dat_file = open(self.qdab_dat_filename)
+        self.qdab_dat = self.qdab_dat_file.readlines()
 
     def tearDown(self):
+        self.dat_file.close()
+        self.qdab_dat_file.close()
         return
 
     def test_open_dab(self):

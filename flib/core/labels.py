@@ -1,7 +1,7 @@
 import sys
 import os
 from collections import defaultdict
-from omim import OMIM
+from flib.core.omim import OMIM
 
 
 class Labels:
@@ -77,4 +77,4 @@ if __name__ == '__main__':
 
     ol = OntoLabels(obo=do, slim_terms=slim_terms)
     (pos1, neg1) = ol.get_labels('DOID:0060041')
-    print len(pos1), len(neg1)
+    print("%d, %d" %(len(pos1), len(neg1)))

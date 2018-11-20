@@ -112,7 +112,7 @@ if __name__ == '__main__':
     (options, args) = parser.parse_args()
 
     if options.dir:
-        gs = gmt()
+        gs = GMT()
         for f in os.listdir(options.dir):
             lines = open(options.dir + '/' + f).readlines()
             for l in lines:
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         # for l in lines:
         #    genes.add(l.strip())
 
-        gs = gmt(options.gmt)
+        gs = GMT(options.gmt)
         for gname, gset in gs.overlap().iteritems():
             for gname2, ovlp in gset.iteritems():
-                print gname, gname2, ovlp
+                print(("%s %s %s") % (gname, gname2, ovlp))

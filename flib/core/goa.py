@@ -1,10 +1,12 @@
 import logging
 import requests
-import urllib2
+#import urllib2
 
-from onto import GeneOntology
+from flib.core.onto import GeneOntology
+from flib.core.url import URLResource
 from entrez import Entrez
 from flib import settings
+
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -26,28 +28,19 @@ class GOA:
         for prefix, suffix in zip(settings.GOA_PREFIX, settings.GOA_ASSOC_SUFFIX):
             annot_zip = settings.GOA_ASSOC_URL + \
                 ''.join((prefix, settings.GOA_NAMES[self._org], suffix))
-            ret = requests.head(annot_zip)
-            if ret.status_code < 400:
-                logger.info('Loading: %s', annot_zip)
-                onto.populate_annotations(
-                    annot_zip,
-                    remote_location=True)
-                break
-            else:
-                logger.debug('URL not available: %s', annot_zip)
+
+            logger.info("Loading annotations from: "+ annot_zip)
+            onto.populate_annotations(annot_zip, remote_location=True)
+
 
         for prefix, suffix in zip(settings.GOA_PREFIX, settings.GOA_INFO_SUFFIX):
             info = settings.GOA_ASSOC_URL + \
                 ''.join((prefix, settings.GOA_NAMES[self._org], suffix))
-            ret = requests.head(info)
-            if ret.status_code < 400:
-                logger.info('Loading: %s', info)
-                annot_info = urllib2.urlopen(info, timeout=5)
-                annot_info = eval(annot_info.read())
-                self._meta = annot_info
-                break
-            else:
-                logger.debug('URL not available: %s', annot_zip)
+
+            logger.info("Loading from: "+ info)
+            annot_info = URLResource(info).get_lines()
+            self._meta = annot_info
+
 
         if idmap:
             onto.map_genes(idmap, xdb_prefixed=True)
@@ -60,9 +53,10 @@ class GOA:
 
 
 if __name__ == '__main__':
-    entrez_map = Entrez()
-    entrez_map.load()
+    # entrez_map = Entrez()
+    # entrez_map.load()
 
     goa = GOA()
     onto = goa.load_onto()
+    print(onto)
     onto.print_to_gmt_file('go.gmt')

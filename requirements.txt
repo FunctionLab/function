@@ -4,3 +4,4 @@ MySQL-python==1.2.3
 numpy==1.13.0
 scipy==0.19.1
 scikit-learn==0.18.1
+six==1.11.0

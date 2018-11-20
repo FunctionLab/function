@@ -1,13 +1,41 @@
 import re
+import locale
 from collections import defaultdict
-from gmt import GMT
-from url import URLResource
+from flib.core.gmt import GMT
+from flib.core.url import URLResource
 
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.ERROR)
 
+
+def go_term_id_comparison(go_term_x, go_term_y):
+    '''Compares two strings according to the current LC_COLLATE setting.
+    As any other compare function, returns a negative, or a positive value, or 0,
+    depending on whether string1 collates before or after string2 or is equal to it.
+    '''
+    return locale.strcoll(go_term_x.go_id, go_term_y.go_id)
+
+
+def cmp_to_key(mycmp):
+    'Convert a cmp= function into a key= function'
+    class K:
+        def __init__(self, obj, *args):
+            self.obj = obj
+        def __lt__(self, other):
+            return mycmp(self.obj, other.obj) < 0
+        def __gt__(self, other):
+            return mycmp(self.obj, other.obj) > 0
+        def __eq__(self, other):
+            return mycmp(self.obj, other.obj) == 0
+        def __le__(self, other):
+            return mycmp(self.obj, other.obj) <= 0
+        def __ge__(self, other):
+            return mycmp(self.obj, other.obj) >= 0
+        def __ne__(self, other):
+            return mycmp(self.obj, other.obj) != 0
+    return K
 
 class OBO:
 
@@ -27,8 +55,7 @@ class OBO:
     def load_obo(self, obo_file, remote_location=False, timeout=5):
 
         if remote_location:
-            obo = URLResource(obo_file).get_file()
-            lines = obo.readlines()
+            lines = URLResource(obo_file).get_lines()
         else:
             obo = open(obo_file, 'r')
             lines = obo.readlines()
@@ -37,7 +64,6 @@ class OBO:
         gterm = None
         for line in lines:
             fields = line.rstrip().split()
-
             if len(fields) < 1:
                 # Blank line
                 continue
@@ -173,7 +199,8 @@ class OBO:
                 if len(tok) > 1:
                     (xrefdb, xrefid) = tok[:2]
                     gterm.xrefs.setdefault(xrefdb, set()).add(xrefid)
-
+        if not remote_location:
+            obo.close()
         return True
 
     def propagate(self):
@@ -241,6 +268,7 @@ class OBO:
 
     def get_termobject_list(self, terms=None, p_namespace=None):
         """Return list of all GOTerms"""
+        print("get_termobject_list")
         logger.info('get_termobject_list')
         if terms is None:
             terms = self.go_terms.keys()
@@ -296,8 +324,8 @@ class OBO:
         logger.info('Populate gene annotations: %s', annotation_file)
 
         if remote_location:
-            ass_file = URLResource(annotation_file).get_file()
-            lines = ass_file.readlines()
+            lines = URLResource(annotation_file).get_lines()
+            #lines = ass_file.readlines()
         else:
             ass_file = open(annotation_file, 'r')
             lines = ass_file.readlines()
@@ -309,6 +337,8 @@ class OBO:
                 continue
 
             fields = line.rstrip('\n').split('\t')
+            if len(fields) == 1:
+                continue
 
             xdb = fields[xdb_col]
             gene = fields[gene_col]
@@ -479,18 +509,18 @@ class OBO:
 
     def print_to_gmt_file(self, out_file, terms=None, p_namespace=None):
         logger.info('print_to_gmt_file')
-        tlist = sorted(
-            self.get_termobject_list(
-                terms=terms,
-                p_namespace=p_namespace))
+        tlist = sorted(self.get_termobject_list(terms=terms,p_namespace=p_namespace),key=cmp_to_key(go_term_id_comparison))
         f = open(out_file, 'w')
         for term in tlist:
             genes = set()
             for annotation in term.annotations:
                 genes.add(annotation.gid)
             if len(genes) > 0:
-                print >> f, term.go_id + '\t' + term.name + \
-                    '\t' + '\t'.join(genes)
+                line = "%s\t%s\t" % (term.go_id,term.name)
+                genes_str = "\t".join(genes)
+                line+=genes_str
+                line+="\n"
+                f.write(line)
         f.close()
 
     def print_to_mat_file(self, out_file, terms=None, p_namespace=None):
@@ -645,14 +675,23 @@ class GOTerm:
         # self.counts = None
         # self.votes = set([])
 
-    def __cmp__(self, other):
-        return cmp(self.go_id, other.go_id)
+    # def __cmp__(self, other):
+    #     return cmp(self.go_id, other.go_id)
+
+
+    def __eq__(self, other):
+        """Override the default Equals behavior"""
+        return self.go_id == other.go_id
 
     def __hash__(self):
         return(self.go_id.__hash__())
 
     def __repr__(self):
-        return(self.go_id + ': ' + self.name)
+        return(self.go_id)
+        #+ ': ' + self.name)
+
+    def __str__(self):
+        return(":"+self.go_id)
 
     def get_id(self):
         return self.go_id
@@ -728,3 +767,39 @@ class GOTerm:
             return self.xrefs[dbid]
         else:
             return None
+
+
+if __name__ == '__main__':
+    from argparse import ArgumentParser
+    import sys
+
+    usage = "usage: %(prog)s [options]"
+    parser = ArgumentParser(prog=usage)
+    parser.add_argument('-o',
+        '--obo_file',
+        dest='obo_file',
+        help='Disease Ontology obo file')
+    parser.add_argument("-v", "--verbose", dest="verbose", action='store_true',
+                        help="output debug loglevel")
+    parser.add_argument('-V', '--version', action='version',
+                        version="%(prog)s dev-unreleased")
+    args = parser.parse_args()
+
+    if args.verbose:  # Setup logging at desired level
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.WARNING)
+
+    logger.debug("Args: %s", args)
+
+    if args.obo_file is None:
+        sys.stderr.write("--obo_file file is required.\n")
+        sys.exit()
+    obo_file=args.obo_file
+    logger.info('Loading disease obo from %s', obo_file)
+    do = OBO()
+    do.load_obo(obo_file=obo_file)
+    print("Loaded")
+    do.populated = True  # mark annotated
+    do.propagate()  # prop annotations
+    print("Populated")

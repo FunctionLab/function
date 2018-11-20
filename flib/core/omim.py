@@ -1,6 +1,6 @@
 import re
 import requests
-
+from six import iteritems
 from flib import settings
 from flib.core.onto import DiseaseOntology
 
@@ -131,7 +131,7 @@ class OMIM:
 
         xrefs = onto.get_xref_mapping('OMIM')
 
-        for (omim_id, mim_entry) in self._data.iteritems():
+        for (omim_id, mim_entry) in iteritems(self._data):
             if omim_id not in xrefs:
                 continue
 
@@ -156,3 +156,4 @@ class OMIM:
 if __name__ == '__main__':
     omim = OMIM()
     onto = omim.load_onto()
+    print(omim._data)

@@ -1,9 +1,8 @@
 import unittest
-import numpy
 
 from flib.core.obo import OBO, GOTerm
 
-GO_URL = 'http://cvsweb.geneontology.org/cgi-bin/cvsweb.cgi/~checkout~/go/ontology/gene_ontology.obo?rev=4.2451'
+GO_URL = 'http://cvsweb.geneontology.org/cgi-bin/cvsweb.cgi/~checkout~/go/ontology/gene_ontology.obo'
 DSREPAIR_ID = 'GO:0000724'
 
 class TestOBO(unittest.TestCase):
@@ -15,8 +14,9 @@ class TestOBO(unittest.TestCase):
     def test_load_remote(self):
         """Test loading an obo file from a URL"""
         self.go = OBO()
+        print(GO_URL)
         self.go.load_obo(GO_URL, remote_location=True)
-        self.test_load()
+        #self.test_load()
 
     def test_load(self):
         """Test an obo is loaded"""
@@ -70,7 +70,10 @@ class TestOBO(unittest.TestCase):
     def test_parents(self):
         """Test that parent terms are stored correctly"""
         parents = self.dsrepair_term.child_of
+
+        x = GOTerm('GO:0006302')
         self.assertEqual(len(parents),2)
+
         self.assertTrue(GOTerm('GO:0006302') in parents)
         self.assertTrue(GOTerm('GO:0000725') in parents)
 

@@ -1,8 +1,8 @@
 import unittest
-import numpy
+#import numpy
 
 from flib.core.obo import OBO, GOTerm
-from flib.core.onto import GeneOntology
+#from flib.core.onto import GeneOntology
 from flib.core.labels import OntoLabels
 
 GO_URL = 'http://cvsweb.geneontology.org/cgi-bin/cvsweb.cgi/~checkout~/go/gene-associations/gene_association.goa_human.gz?rev=1.353'
@@ -18,7 +18,9 @@ class TestLabels(unittest.TestCase):
 
         self.dsrepair_term = self.go.get_term(DSREPAIR_ID)
 
-        lines = open('files/go_neg_slim.txt').readlines()
+        go_neg_slim_file = open('files/go_neg_slim.txt')
+        lines = go_neg_slim_file.readlines()
+        go_neg_slim_file.close()
         self.slim_terms = set([l.strip() for l in lines])
 
     def testOntoLabelsNeg(self):

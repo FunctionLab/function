@@ -1,24 +1,49 @@
-import urllib2
+#import urllib2
+from six.moves.urllib.request import urlopen
+from six.moves.urllib.error import HTTPError
 import gzip
 import io
-
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 class URLResource:
 
     def __init__(self, url):
         self._url = url
-        self._file = None
+        self._lines = None
 
-    def get_file(self):
-        if self._file is not None:
-            return self._file
+    def get_lines(self):
+        if self._lines is not None:
+            return self._lines
         else:
-            req = urllib2.Request(self._url, headers={'User-Agent':'Browser'})
-            url_file = urllib2.urlopen(req, timeout=10)
-            if url_file.info().get('Content-Encoding') == 'gzip' or \
-                    url_file.info().get('Content-Type') == 'application/x-gzip' or \
-                    self._url.endswith('.gz'):
-                url_file = gzip.GzipFile(fileobj=io.BytesIO(url_file.read()))
-            self._file = url_file
+            try:
+                response = urlopen(self._url)
+            except HTTPError as error:
+                logger.error(str(error) + "\n\t " + self._url)
+                return []
 
-        return self._file
+            raw_content = response.read()
+            content = raw_content
+            response_info =  response.info()
+            if response_info.get('Content-Type') == 'application/x-gzip' or \
+                response_info.get('Content-Encoding') == 'gzip' or \
+                self._url.endswith('.gz'):
+                content = gzip.GzipFile(fileobj=io.BytesIO(raw_content)).read()
+
+            content_decoded = content.decode('utf-8')
+            #to get lines, split by \n
+            lines = content_decoded.split("\n")
+            self._lines = lines
+        return self._lines
+
+if __name__ == '__main__':
+    url_resource = URLResource('http://www.geneontology.org/gene-associations/gene_association.human.gz')
+    lines = url_resource.get_lines()
+    print("%d lines" % len(lines))
+    url_resource = URLResource('ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz')
+    lines = url_resource.get_lines()
+    print("%d lines" % len(lines))
+
+
+

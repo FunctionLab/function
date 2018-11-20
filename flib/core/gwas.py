@@ -4,9 +4,10 @@ from collections import defaultdict
 import re
 import requests
 
-from onto import DiseaseOntology
-from entrez import Entrez
-from idmap import IDMap
+from flib.core.onto import DiseaseOntology
+from flib.core.entrez import Entrez
+from flib.core.url import URLResource
+from flib.core.idmap import IDMap
 from flib import settings
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -48,7 +49,7 @@ class GWASCatalog:
         return onto
 
     def load_data(self):
-        lines = requests.get(settings.GWAS_URL).text.encode('utf-8').splitlines()
+        lines = URLResource(settings.GWAS_URL).get_lines()
 
         genesets = defaultdict(set)
         headers = []
