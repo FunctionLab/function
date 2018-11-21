@@ -2,10 +2,6 @@
 
 from __future__ import division
 from __future__ import print_function
-#from builtins import str
-#from builtins import range
-#from builtins import object
-
 import sys
 import array
 import logging
@@ -13,6 +9,8 @@ import math
 
 logger = logging.getLogger(__name__)
 
+
+DECIMAL_POINT_FORMAT="{0:.12f}"
 
 class Dab(object):
 
@@ -208,11 +206,12 @@ class Dab(object):
             line.append(self.gene_list[i])
             for j in range(0, i):
                 v = self.get_value(i, j)
-                line.append(str(v))
+                line.append(DECIMAL_POINT_FORMAT.format(v))
             line.append("1")
             for j in range(i + 1, self.get_size()):
                 v = self.get_value(i, j)
-                line.append(str(v))
+                #line.append(str(v))
+                line.append(DECIMAL_POINT_FORMAT.format(v))
 
             print("\t".join(line), file=out_file)
 
@@ -220,7 +219,7 @@ class Dab(object):
         for i in range(0, self.get_size()):
             for j in range(i + 1, self.get_size()):
                 print(self.gene_list[i] + '\t' +
-                      self.gene_list[j] + '\t' + str(self.get_value(i, j)),
+                      self.gene_list[j] + '\t' + DECIMAL_POINT_FORMAT.format(self.get_value(i, j)),
                       file=out_file)
 
 
