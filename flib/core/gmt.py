@@ -1,7 +1,6 @@
-import sys
 import os
 from collections import defaultdict
-
+from six import iteritems
 
 class GMT:
 
@@ -50,15 +49,15 @@ class GMT:
         self._genesets[gsid].add(gene)
 
     def add(self, gmt):
-        for gsid, genes in gmt.genesets.iteritems():
+        for gsid, genes in iteritems(gmt.genesets):
             self._genesets[gsid] |= genes
-        for gsid, name in gmt.setnames.iteritems():
+        for gsid, name in iteritems(gmt.setnames):
             if gsid not in self._setnames:
                 self._setnames[gsid] = gmt.setnames[gsid]
 
     def write(self, outfile):
         outf = open(outfile, 'w')
-        for gsid, genes in self._genesets.iteritems():
+        for gsid, genes in iteritems(self._genesets):
             outf.write(
                 gsid +
                 '\t' +
@@ -127,6 +126,7 @@ if __name__ == '__main__':
         #    genes.add(l.strip())
 
         gs = GMT(options.gmt)
-        for gname, gset in gs.overlap().iteritems():
-            for gname2, ovlp in gset.iteritems():
-                print(("%s %s %s") % (gname, gname2, ovlp))
+        print(gs.setnames)
+        # for gname, gset in gs.overlap().iteritems():
+        #     for gname2, ovlp in gset.iteritems():
+        #         print(("%s %s %s") % (gname, gname2, ovlp))
