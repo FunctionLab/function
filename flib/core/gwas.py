@@ -1,13 +1,10 @@
-import sys
 import logging
 from collections import defaultdict
-import re
-import requests
+from six import iteritems
 
 from flib.core.onto import DiseaseOntology
 from flib.core.entrez import Entrez
 from flib.core.url import URLResource
-from flib.core.idmap import IDMap
 from flib import settings
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -30,7 +27,7 @@ class GWASCatalog:
 
         xrefs = onto.get_xref_mapping('EFO')
 
-        for (trait, uri), genes in self._data.iteritems():
+        for (trait, uri), genes in iteritems(self._data):
             uids = [x.split('/')[-1].replace('EFO_', '')
                     for x in uri.split(',')]
             if len(uids) > 1:
