@@ -72,7 +72,7 @@ class CptNodesHolder:
             return def_vals
         # Convert to float
         float_vals = [float(s) for s in vals]
-        return [float_vals[0:strlen / 2], float_vals[strlen / 2:]]
+        return [float_vals[0:int(strlen / 2)], float_vals[int(strlen / 2):]]
 
     def get_node(self, node_id):
         ''' Returns CptNode obj '''
@@ -172,6 +172,6 @@ if __name__ == '__main__':
 
         if max(befs) > 0:
             #print s, llsum, [x for x in befs if x > 0]
-            print(s)
-            print(llsum)
-            print([x for x in befs if x > 0])
+            line = "%s %f [" % (s,llsum)
+            line+=" ".join([str(x) for x in befs if x > 0])+"]"
+            print(line)
