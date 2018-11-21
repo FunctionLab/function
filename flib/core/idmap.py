@@ -1,4 +1,3 @@
-import sys
 import logging
 
 logging.basicConfig()
@@ -43,3 +42,13 @@ class IDMap:
 
     def __getitem__(self, arg):
         return self.get(arg)
+
+if __name__ == '__main__':
+    key_map = {}
+    key_map['trnQ'] ={'6775095', '8923208'}
+    key_map['MIR10527']={'113218505'}
+
+    idMap = IDMap(key_map=key_map)
+    print(idMap.keys())
+    print(idMap.get('trnQ'))
+    print(idMap.get('xxx'))
