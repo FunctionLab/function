@@ -2,7 +2,6 @@ import logging
 
 from flib.core.onto import GeneOntology
 from flib.core.url import URLResource
-from entrez import Entrez
 from flib import settings
 
 
