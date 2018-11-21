@@ -7,7 +7,7 @@ from collections import defaultdict
 from flib.core.obo import OBO
 from flib.core.gmt import GMT
 from flib.core.idmap import IDMap
-
+from six import iteritems
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -143,12 +143,12 @@ else:
 
 if args.pub_filter:
     pub_counts = defaultdict(set)
-    for (term_id, term) in gene_ontology.go_terms.iteritems():
+    for (term_id, term) in iteritems(gene_ontology.go_terms):
         if term.namespace != args.nspace:
             continue
         for a in term.annotations:
             pub_counts[a.ref].add((term, a))
-    for (ref, annots) in pub_counts.iteritems():
+    for (ref, annots) in iteritems(pub_counts):
         if len(annots) > 50:
             logger.info(
                 'Removing %i annotations from: %s',

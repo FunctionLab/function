@@ -3,7 +3,7 @@ import locale
 from collections import defaultdict
 from flib.core.gmt import GMT
 from flib.core.url import URLResource
-
+from six import iteritems,itervalues
 import logging
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -282,12 +282,12 @@ class OBO:
 
     def map_genes(self, id_name, xdb_prefixed=False):
         """Map gene names using the idmap object id_name"""
-        for go_term in self.go_terms.itervalues():
+        for go_term in itervalues(self.go_terms):
             go_term.map_genes(id_name, xdb_prefixed=xdb_prefixed)
 
     def filter_annotations(self, evidence_codes):
         """Filter out gene annotations by their annotation evidence"""
-        for go_term in self.go_terms.itervalues():
+        for go_term in itervalues(go_terms):
             go_term.filter_annotations(evidence_codes)
 
     def populate_annotations(self, annotation_file, remote_location=False, xdb_col=0,
@@ -357,7 +357,7 @@ class OBO:
 
     def populate_annotations_from_gmt(self, gmt):
         """Populate the ontology with gene annotations from a GMT file"""
-        for (gsid, genes) in gmt.genesets.iteritems():
+        for (gsid, genes) in iteritems(gmt.genesets):
             term = self.get_term(gsid)
             if term:
                 for gid in genes:

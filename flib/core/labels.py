@@ -1,6 +1,5 @@
-import sys
 import os
-from collections import defaultdict
+from six import iteritems
 from flib.core.omim import OMIM
 
 
@@ -22,7 +21,7 @@ class Labels:
                             neg_genes.add(gene)
                 self._standards[labels_file] = (pos_genes, neg_genes)
         else:
-            for gsid, genes in gmt.genesets.iteritems():
+            for gsid, genes in iteritems(gmt.genesets):
                 pos_genes = genes
                 neg_genes = gmt.genes - pos_genes
                 self._standards[gsid] = (pos_genes, neg_genes)
