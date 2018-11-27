@@ -1,5 +1,5 @@
 #import urllib2
-from six.moves.urllib.request import urlopen
+from six.moves.urllib.request import urlopen,Request
 from six.moves.urllib.error import HTTPError
 import gzip
 import io
@@ -19,7 +19,9 @@ class URLResource:
             return self._lines
         else:
             try:
-                response = urlopen(self._url)
+                request = Request(self._url)
+                request.add_header('User-Agent', 'Mozilla/5.0')
+                response = urlopen(request)
             except HTTPError as error:
                 logger.error(str(error) + "\n\t " + self._url)
                 return []
@@ -57,3 +59,6 @@ if __name__ == '__main__':
     lines = url_resource.get_lines()
     print("%s\n\t%s" % (url_resource._url, lines))
 
+    url_resource = URLResource('http://www.brenda-enzymes.info/ontology/tissue/tree/update/update_files/BrendaTissueOBO')
+    lines = url_resource.get_lines()
+    print("%s\n\t%s" % (url_resource._url, lines))
