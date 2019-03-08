@@ -25,13 +25,13 @@ Create a virtualenv and activate it:
 ### Install dependencies python2
 
         $ cd function
-        $ pip install -r requirements.txt
+        $ pip install -r requirements2.txt
 
 
 ### Install dependencies python3
 
         $ cd function
-        $ pip install -r requirements3.txt
+        $ pip install -r requirements.txt
 
 
 ## Unit tests

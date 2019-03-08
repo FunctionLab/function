@@ -1,7 +1,9 @@
-requests==2.18.1
+-i https://pypi.org/simple
+certifi==2018.10.15
+chardet==3.0.4
+idna==2.7
+numpy==1.15.4
 requests-ftp==0.3.1
-MySQL-python==1.2.3
-numpy==1.13.0
-scipy==0.19.1
-scikit-learn==0.18.1
+requests==2.20.1
 six==1.11.0
+urllib3==1.24.1
