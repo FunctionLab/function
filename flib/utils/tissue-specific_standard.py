@@ -1,6 +1,7 @@
 import argparse
 
 import logging
+from functools import reduce
 logging.basicConfig()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -72,7 +73,7 @@ for line in edge_lines:
     if ubiq and len(edge & ubiq) == 2:
         continue
 
-    for (tissue, genes) in tissue_genes.genesets.iteritems():
+    for (tissue, genes) in tissue_genes.genesets.items():
         # Include positive edges where both genes are expressed in the tissue
         # Include if one gene is tissue-specific and one gene is ubiq
         if len(edge & genes) == 2 or \
@@ -89,14 +90,14 @@ within_edges_neg = reduce(set.union, [tissue_std_edges[tissue]['0'] \
     for tissue in tissue_std_edges])
 tissue_all_pos = reduce(frozenset.union, within_edges_pos)
 
-for (tissue, stds) in tissue_std_edges.iteritems():
+for (tissue, stds) in tissue_std_edges.items():
     c3 = tissue_std_edges[tissue]['0']
     for c3_edge in list(c3):
         # Limit negative edges to positive genes
         if len(c3_edge & tissue_all_pos) < 2:
             c3.remove(c3_edge)
 
-for (tissue, stds) in tissue_std_edges.iteritems():
+for (tissue, stds) in tissue_std_edges.items():
     c1 = tissue_std_edges[tissue]['1']
     c1_g = reduce(frozenset.union, c1)
     c1_tspc = c1_g - ubiq
@@ -117,5 +118,5 @@ for (tissue, stds) in tissue_std_edges.iteritems():
                 c2 -= tissue_std_edges[atissue]['1']
                 c4 -= tissue_std_edges[atissue]['0']
 
-    print tissue, len(c1_tspc), len(c1), len(c2), len(c3), len(c4)
+    print(tissue, len(c1_tspc), len(c1), len(c2), len(c3), len(c4))
 

@@ -49,6 +49,6 @@ for f in files:
 
     labels, scores, probs = np.array(labels), np.array(scores), np.array(probs)
 
-    print f, len([l for l in labels if l]), \
+    print(f, len([l for l in labels if l]), \
         len([l for l in labels if not l]), \
-        average_precision_score(labels, scores), roc_auc_score(labels, scores)
+        average_precision_score(labels, scores), roc_auc_score(labels, scores))

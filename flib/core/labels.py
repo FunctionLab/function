@@ -30,7 +30,7 @@ class Labels:
         return self._standards[term_id]
 
     def get_terms(self):
-        return self._standards.keys()
+        return list(self._standards.keys())
 
 
 class OntoLabels:
@@ -65,7 +65,7 @@ class OntoLabels:
 
 
 if __name__ == '__main__':
-    from onto import DiseaseOntology
+    from .onto import DiseaseOntology
 
     do = DiseaseOntology.generate()
     OMIM().load_onto(onto=do)
@@ -76,4 +76,4 @@ if __name__ == '__main__':
 
     ol = OntoLabels(obo=do, slim_terms=slim_terms)
     (pos1, neg1) = ol.get_labels('DOID:0060041')
-    print("%d, %d" %(len(pos1), len(neg1)))
+    print(("%d, %d" %(len(pos1), len(neg1))))

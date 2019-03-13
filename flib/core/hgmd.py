@@ -1,8 +1,8 @@
 import sys
 import os
 import MySQLdb as mdb
-from onto import DiseaseOntology
-from entrez import Entrez
+from .onto import DiseaseOntology
+from .entrez import Entrez
 import logging
 
 from flib import settings

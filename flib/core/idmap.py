@@ -26,7 +26,7 @@ class IDMap:
         if self._key_val is None:
             return []
         else:
-            return self._key_val.keys()
+            return list(self._key_val.keys())
 
     def get(self, id):
         """Returns emtpy list if not loaded or if the key does not exist."""
@@ -49,6 +49,6 @@ if __name__ == '__main__':
     key_map['MIR10527']={'113218505'}
 
     idMap = IDMap(key_map=key_map)
-    print(idMap.keys())
-    print(idMap.get('trnQ'))
-    print(idMap.get('xxx'))
+    print((list(idMap.keys())))
+    print((idMap.get('trnQ')))
+    print((idMap.get('xxx')))

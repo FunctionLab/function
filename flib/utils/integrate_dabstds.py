@@ -137,7 +137,7 @@ def predict(job=None, job_name=None, counter=None, data=None, working=None,
             job_ctxts = \
                 standards[contexts_submitted:(contexts_submitted + threads)]
             if weights_suffix is not None:
-                job_ctxts = map(lambda x: x + weights_suffix, job_ctxts)
+                job_ctxts = [x + weights_suffix for x in job_ctxts]
             job_thds = len(job_ctxts)
             job_cmd = cmdline + ' -t ' + str(job_thds) + ' ' + \
                 ' '.join(job_ctxts)
@@ -349,7 +349,7 @@ intervals = []
 int_dir = os.path.join(options.workdir, 'intervals')
 # Make CV gene sets
 if options.intervals > 1:
-    intervals = range(options.intervals)
+    intervals = list(range(options.intervals))
     if not os.path.exists(int_dir):
         if not options.split:
             sys.stderr.write('-S must be passed if intervals have not already \
@@ -478,8 +478,8 @@ if options.dcheck:
                          depends=depend_jobs)
 
 
-print local_cmds.values()[0]
-os.system(local_cmds.values()[0])
+print(list(local_cmds.values())[0])
+os.system(list(local_cmds.values())[0])
 
 
 for interval in intervals:

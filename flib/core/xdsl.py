@@ -56,7 +56,7 @@ class CptNodesHolder:
                             self.nodes[node_id] = node
                             del node
         except IOError:
-            print('Can\'t open the file: %s.\nPlease check if file exists and if it has right permission.' % filename)
+            print(('Can\'t open the file: %s.\nPlease check if file exists and if it has right permission.' % filename))
 
     def _parse_probabilities(self, prob_str):
         '''
@@ -68,7 +68,7 @@ class CptNodesHolder:
         vals = prob_str.split()
         strlen = len(vals)
         if isodd(strlen):
-            print ('Incorrect # of probabilities for this str: %s' % prob_str)
+            print(('Incorrect # of probabilities for this str: %s' % prob_str))
             return def_vals
         # Convert to float
         float_vals = [float(s) for s in vals]
@@ -86,7 +86,7 @@ class CptNodesHolder:
 
     def get_nodes_ids(self):
         ''' Returns all nodes ids in the current holder '''
-        return self.nodes.keys()
+        return list(self.nodes.keys())
 
 
 class CptNode:
@@ -145,7 +145,7 @@ if __name__ == '__main__':
         out_file = open(options.out, 'w')
         # such bad code...
         dsets = nodes.get_nodes_ids()
-        for i in xrange(-1, 7):
+        for i in range(-1, 7):
             for dataset in dsets:
                 if i == -1:
                     out_file.write(dataset + '_neg' + '\t')

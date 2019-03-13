@@ -50,15 +50,15 @@ class URLResource:
 if __name__ == '__main__':
     url_resource = URLResource('http://geneontology.org/ontology/go.obo')
     lines = url_resource.get_lines()
-    print("%s\n\t%d lines" % (url_resource._url, len(lines)))
+    print(("%s\n\t%d lines" % (url_resource._url, len(lines))))
     url_resource = URLResource('ftp://ftp.ncbi.nlm.nih.gov/gene/DATA/GENE_INFO/Mammalia/Homo_sapiens.gene_info.gz')
     lines = url_resource.get_lines()
-    print("%s\n\t%d lines" % (url_resource._url, len(lines)))
+    print(("%s\n\t%d lines" % (url_resource._url, len(lines))))
 
     url_resource = URLResource('http://www.geneontology.org/gene-associations/goa_human.gaf.json')
     lines = url_resource.get_lines()
-    print("%s\n\t%s" % (url_resource._url, lines))
+    print(("%s\n\t%s" % (url_resource._url, lines)))
 
     url_resource = URLResource('http://www.brenda-enzymes.info/ontology/tissue/tree/update/update_files/BrendaTissueOBO')
     lines = url_resource.get_lines()
-    print("%s\n\t%s" % (url_resource._url, lines))
+    print(("%s\n\t%s" % (url_resource._url, lines)))

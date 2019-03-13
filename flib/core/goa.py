@@ -49,7 +49,7 @@ class GOA:
         return onto
 
     def get_meta_data(self, key):
-        print(self._meta)
+        print((self._meta))
         return self._meta.get(key)
 
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
 
     goa = GOA()
     onto = goa.load_onto()
-    print(goa._meta)
+    print((goa._meta))
     #onto.print_to_gmt_file('go.gmt')
     #onto.print_to_dir('test')
     #onto.print_to_single_file('go.single')

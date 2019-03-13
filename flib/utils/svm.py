@@ -67,7 +67,7 @@ if args.gmt:
     gmt = GMT(filename=args.gmt)
 
     # Filter terms by geneset size
-    terms = [termid for termid, genes in gmt.genesets.iteritems()
+    terms = [termid for termid, genes in gmt.genesets.items()
              if len(genes) >= MIN_POS and len(genes) <= MAX_POS]
 
     # Filter terms by namespace

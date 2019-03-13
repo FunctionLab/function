@@ -48,7 +48,7 @@ class OBO:
             # Load the meta data commonly included at the
             # start of the obo file.
             # Example keys: format-version, data-version, etc
-            elif not inside and not len(self.go_terms.keys()) and len(fields) > 1:
+            elif not inside and not len(list(self.go_terms.keys())) and len(fields) > 1:
                 key = fields[0]
                 if key.endswith(':'):
                     key = key[:-1]
@@ -243,7 +243,7 @@ class OBO:
         """Return list of all GOTerms"""
         logger.info('get_termobject_list')
         if terms is None:
-            terms = self.go_terms.keys()
+            terms = list(self.go_terms.keys())
         reterms = []
         for tid in terms:
             obo_term = self.get_term(tid)
@@ -257,7 +257,7 @@ class OBO:
     def get_obsolete_terms(self):
         """Return list of all obsolete GOTerms"""
         logger.info('get_obsolete_list')
-        return self.go_obsolete.values()
+        return list(self.go_obsolete.values())
 
     def get_xref_mapping(self, prefix):
         """Return dict of terms mappings to external database ids"""
@@ -424,7 +424,7 @@ class OBO:
     def get_leaves(self, namespace='biological_process', min_annot=10):
         """Return a set of leaf terms from the ontology"""
         leaves, bottom = set(), set()
-        for term in self.go_terms.values():
+        for term in list(self.go_terms.values()):
             if len(term.parent_of) == 0 and term.namespace == namespace and len(
                     term.annotations) >= min_annot:
                 leaves.add(term)

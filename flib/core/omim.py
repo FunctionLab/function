@@ -156,4 +156,4 @@ class OMIM:
 if __name__ == '__main__':
     omim = OMIM()
     onto = omim.load_onto()
-    print(omim._data)
+    print((omim._data))

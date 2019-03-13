@@ -15,11 +15,11 @@ from sklearn.metrics import roc_auc_score, average_precision_score
 from sklearn.calibration import _SigmoidCalibration
 from sklearn.isotonic import IsotonicRegression
 
-from dab import Dab
-from gmt import GMT
-from omim import OMIM
-from onto import DiseaseOntology
-from labels import OntoLabels
+from .dab import Dab
+from .gmt import GMT
+from .omim import OMIM
+from .onto import DiseaseOntology
+from .labels import OntoLabels
 
 
 class NetworkSVM:

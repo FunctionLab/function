@@ -24,7 +24,7 @@ class GMT:
                 self._genes |= self._genesets[gsid]
 
     def ids(self):
-        return self.genesets.keys()
+        return list(self.genesets.keys())
 
     @property
     def genesets(self):
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         #    genes.add(l.strip())
 
         gs = GMT(options.gmt)
-        print(gs.setnames)
+        print((gs.setnames))
         # for gname, gset in gs.overlap().iteritems():
         #     for gname2, ovlp in gset.iteritems():
         #         print(("%s %s %s") % (gname, gname2, ovlp))

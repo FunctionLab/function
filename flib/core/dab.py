@@ -1,7 +1,4 @@
 #!/usr/bin/python
-
-from __future__ import division
-from __future__ import print_function
 import sys
 import array
 import logging
