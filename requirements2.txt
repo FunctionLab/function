@@ -1,4 +1,4 @@
-requests==2.18.1
+requests==2.20.1
 requests-ftp==0.3.1
 MySQL-python==1.2.3
 numpy==1.13.0
